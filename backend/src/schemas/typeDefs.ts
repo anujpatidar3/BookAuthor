@@ -98,6 +98,11 @@ export const typeDefs = gql`
     pagination: PaginationInfo!
   }
 
+  type ReviewConnection {
+    reviews: [Review!]!
+    pagination: PaginationInfo!
+  }
+
   input BookInput {
     title: String!
     description: String
@@ -184,7 +189,7 @@ export const typeDefs = gql`
     author(id: ID!): Author
     
     # Review queries
-    reviews(bookId: Int!, page: Int = 1, limit: Int = 10): [Review!]!
+    reviews(bookId: Int!, page: Int = 1, limit: Int = 10): ReviewConnection!
     
     # Search
     searchBooks(query: String!): [Book!]!

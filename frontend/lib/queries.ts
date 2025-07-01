@@ -193,12 +193,22 @@ export const SEARCH_AUTHORS = gql`
 export const GET_REVIEWS = gql`
   query GetReviews($bookId: Int!, $page: Int, $limit: Int) {
     reviews(bookId: $bookId, page: $page, limit: $limit) {
-      id
-      rating
-      comment
-      reviewerName
-      helpful
-      createdAt
+      reviews {
+        id
+        rating
+        comment
+        reviewerName
+        helpful
+        createdAt
+        updatedAt
+      }
+      pagination {
+        currentPage
+        totalPages
+        totalItems
+        hasNextPage
+        hasPrevPage
+      }
     }
   }
 `;

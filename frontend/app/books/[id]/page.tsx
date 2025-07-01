@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { useParams, useRouter } from 'next/navigation';
 import { Navigation } from '@/components/Navigation';
 import { LoadingSpinner } from '@/components/Loading';
+import ReviewForm from '@/components/ReviewForm';
+import ReviewList from '@/components/ReviewList';
 import { GET_BOOK } from '@/lib/queries';
 import { Book } from '@/types';
 import { formatDate, formatYear, renderStars } from '@/lib/utils';
@@ -14,11 +17,31 @@ export default function BookDetailPage() {
   const params = useParams();
   const router = useRouter();
   const bookId = params.id as string;
+  
+  // Review modal state
+  const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState<any>(null);
+  const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
 
-  const { data, loading, error } = useQuery(GET_BOOK, {
+  const { data, loading, error, refetch } = useQuery(GET_BOOK, {
     variables: { id: bookId },
     errorPolicy: 'all',
   });
+
+  const handleReviewSuccess = () => {
+    setReviewRefreshTrigger(prev => prev + 1);
+    refetch(); // Refresh book data to update review count
+  };
+
+  const handleEditReview = (review: any) => {
+    setEditingReview(review);
+    setIsReviewFormOpen(true);
+  };
+
+  const handleCloseReviewForm = () => {
+    setIsReviewFormOpen(false);
+    setEditingReview(null);
+  };
 
   if (loading) {
     return (
@@ -56,6 +79,7 @@ export default function BookDetailPage() {
   }
 
   const book: Book = data.book;
+  console.log('Book data:', book);
   const rating = book.metadata?.averageRating;
   const reviewCount = book.metadata?.totalReviews || 0;
 
@@ -131,7 +155,7 @@ export default function BookDetailPage() {
                 )}
 
                 {/* Rating */}
-                {rating && (
+                {rating && book.metadata?.totalRatings && book.metadata?.totalRatings>0 ? (
                   <div className="flex items-center mb-6">
                     <Star className="h-5 w-5 text-yellow-400 mr-2" />
                     <span className="text-yellow-400 mr-2">
@@ -146,7 +170,7 @@ export default function BookDetailPage() {
                       </span>
                     )}
                   </div>
-                )}
+                ): <></>}
 
                 {/* Genres */}
                 {book.metadata?.genres && book.metadata.genres.length > 0 && (
@@ -195,20 +219,33 @@ export default function BookDetailPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900 flex items-center">
                 <MessageSquare className="h-5 w-5 mr-2" />
-                Reviews ({reviewCount})
+                Reviews ({book.metadata?.totalReviews || 0})
               </h2>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+              <button 
+                onClick={() => setIsReviewFormOpen(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm"
+              >
                 Write a Review
               </button>
             </div>
           </div>
-          <div className="px-6 py-8">
-            <div className="text-center text-gray-500">
-              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No reviews yet. Be the first to review this book!</p>
-            </div>
+          <div className="px-6 py-6">
+            <ReviewList 
+              bookId={bookId} 
+              onEditReview={handleEditReview}
+              refreshTrigger={reviewRefreshTrigger}
+            />
           </div>
         </div>
+
+        {/* Review Form Modal */}
+        <ReviewForm
+          bookId={bookId}
+          isOpen={isReviewFormOpen}
+          onClose={handleCloseReviewForm}
+          onSuccess={handleReviewSuccess}
+          editingReview={editingReview}
+        />
       </main>
     </div>
   );

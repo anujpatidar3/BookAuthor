@@ -8,12 +8,31 @@ export const reviewResolvers = {
     reviews: async (_: any, { bookId, page = 1, limit = 10 }: { bookId: number; page?: number; limit?: number }) => {
       try {
         const skip = (page - 1) * limit;
+        
+        // Get total count
+        const totalItems = await Review.countDocuments({ bookId });
+        
+        // Get reviews with pagination
         const reviews = await Review.find({ bookId })
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit);
 
-        return reviews;
+        // Calculate pagination info
+        const totalPages = Math.ceil(totalItems / limit);
+        const hasNextPage = page < totalPages;
+        const hasPrevPage = page > 1;
+
+        return {
+          reviews,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            totalItems,
+            hasNextPage,
+            hasPrevPage,
+          },
+        };
       } catch (error) {
         throw new GraphQLError(`Failed to fetch reviews: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
@@ -130,21 +149,37 @@ async function updateBookRatingStats(bookId: number) {
     const reviews = await Review.find({ bookId });
     const totalReviews = reviews.length;
     const totalRatings = reviews.filter(r => r.rating).length;
-    const averageRating = totalRatings > 0 
-      ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / totalRatings 
-      : undefined;
 
-    await BookMetadata.findOneAndUpdate(
-      { bookId },
-      {
-        $set: {
-          totalReviews,
-          totalRatings,
-          averageRating: averageRating ? Math.round(averageRating * 10) / 10 : undefined,
+    if (totalRatings > 0) {
+      // If there are ratings, calculate and set average
+      const averageRating = reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / totalRatings;
+      await BookMetadata.findOneAndUpdate(
+        { bookId },
+        {
+          $set: {
+            totalReviews,
+            totalRatings,
+            averageRating: Math.round(averageRating * 10) / 10,
+          },
         },
-      },
-      { upsert: true }
-    );
+        { upsert: true }
+      );
+    } else {
+      // If no ratings, explicitly remove the averageRating field
+      await BookMetadata.findOneAndUpdate(
+        { bookId },
+        {
+          $set: {
+            totalReviews,
+            totalRatings,
+          },
+          $unset: {
+            averageRating: "",
+          },
+        },
+        { upsert: true }
+      );
+    }
   } catch (error) {
     console.error('Error updating book rating stats:', error);
   }

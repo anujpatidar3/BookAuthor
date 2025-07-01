@@ -11,6 +11,7 @@ interface BookCardProps {
 export function BookCard({ book }: BookCardProps) {
   const coverImage = book.metadata?.coverImageUrl || '/placeholder-book.png';
   const rating = book.metadata?.averageRating;
+  const ratingCount = book.metadata?.totalRatings || 0;
   const reviewCount = book.metadata?.totalReviews || 0;
 
   return (
@@ -62,7 +63,7 @@ export function BookCard({ book }: BookCardProps) {
               )}
 
               {/* Rating and Reviews */}
-              {rating && (
+              {rating && ratingCount ? (
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center">
                     <span className="text-yellow-400 text-sm">
@@ -78,7 +79,7 @@ export function BookCard({ book }: BookCardProps) {
                     </span>
                   )}
                 </div>
-              )}
+              ): <></>}
 
               {/* Publication Date */}
               {book.published_date && (
