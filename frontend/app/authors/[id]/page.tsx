@@ -1,19 +1,51 @@
 'use client';
 
-import { useQuery } from '@apollo/client';
-import { useParams } from 'next/navigation';
+import { useState } from 'react';
+import { useQuery, useMutation } from '@apollo/client';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Navigation } from '@/components/Navigation';
 import { BookCard } from '@/components/BookCard';
 import { LoadingSpinner } from '@/components/Loading';
 import { GET_AUTHOR, GET_BOOKS } from '@/lib/queries';
+import { DELETE_AUTHOR } from '@/lib/mutations';
 import { Author, Book } from '@/types';
-import { User, Calendar, BookOpen, Edit } from 'lucide-react';
+import { User, Calendar, BookOpen, Edit, Trash2 } from 'lucide-react';
 
 export default function AuthorDetail() {
   const params = useParams();
+  const router = useRouter();
   const authorId = params.id as string;
+
+  // State for delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Mutations
+  const [deleteAuthor] = useMutation(DELETE_AUTHOR, {
+    onCompleted: () => {
+      router.push('/authors');
+    },
+    onError: (error) => {
+      console.error('Error deleting author:', error);
+      alert(error.message);
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    },
+  });
+
+  // Delete handler
+  const handleDeleteAuthor = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteAuthor({
+        variables: { id: authorId },
+      });
+    } catch (error) {
+      // Error handling is done in the mutation's onError callback
+    }
+  };
 
   const { data: authorData, loading: authorLoading, error: authorError } = useQuery(GET_AUTHOR, {
     variables: { id: authorId }
@@ -60,7 +92,7 @@ export default function AuthorDetail() {
 
   const author: Author = authorData.author;
   const books: Book[] = booksData?.books?.books || [];
-  console.log('Author Data:', authorData);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -104,13 +136,23 @@ export default function AuthorDetail() {
                 </div>
               </div>
               <div className="flex-shrink-0">
-                <Link
-                  href={`/authors/${author.id}/edit`}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Author
-                </Link>
+                <div className="flex space-x-3">
+                  <Link
+                    href={`/authors/${author.id}/edit`}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Author
+                  </Link>
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-white hover:bg-red-50"
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {isDeleting ? 'Deleting...' : 'Delete Author'}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -207,6 +249,49 @@ export default function AuthorDetail() {
             )}
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3 text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                  <Trash2 className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mt-2">Delete Author</h3>
+                <div className="mt-2 px-7 py-3">
+                  <p className="text-sm text-gray-500">
+                    Are you sure you want to delete <strong>{author.name}</strong>? This action cannot be undone.
+                    {books.length > 0 && (
+                      <span className="block mt-2 text-red-600 font-medium">
+                        Note: This author has {books.length} book{books.length !== 1 ? 's' : ''} associated. 
+                        Please delete or reassign the books first.
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div className="items-center px-4 py-3">
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                      disabled={isDeleting}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDeleteAuthor}
+                      className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                      disabled={isDeleting || books.length > 0}
+                    >
+                      {isDeleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

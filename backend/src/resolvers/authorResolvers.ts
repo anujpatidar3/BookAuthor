@@ -144,7 +144,6 @@ export const authorResolvers = {
             if (oldPublicId) {
               try {
                 await deleteImageFromCloudinary(oldPublicId);
-                console.log('Deleted old author image:', oldPublicId);
               } catch (error) {
                 console.error('Failed to delete old author image:', error);
                 // Don't throw error, continue with update
@@ -198,7 +197,6 @@ export const authorResolvers = {
           if (publicId) {
             try {
               await deleteImageFromCloudinary(publicId);
-              console.log('Deleted author profile image:', publicId);
             } catch (error) {
               console.error('Failed to delete author profile image:', error);
               // Don't throw error, continue with deletion

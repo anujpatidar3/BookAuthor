@@ -185,7 +185,6 @@ export const bookResolvers = {
             if (oldPublicId) {
               try {
                 await deleteImageFromCloudinary(oldPublicId);
-                console.log('Deleted old book cover image:', oldPublicId);
               } catch (error) {
                 console.error('Failed to delete old book cover image:', error);
                 // Don't throw error, continue with update

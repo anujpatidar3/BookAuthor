@@ -18,10 +18,11 @@ interface Review {
 interface ReviewListProps {
   bookId: string;
   onEditReview: (review: Review) => void;
+  bookDataRefetch: () => void;
   refreshTrigger?: number;
 }
 
-export default function ReviewList({ bookId, onEditReview, refreshTrigger }: ReviewListProps) {
+export default function ReviewList({ bookId, onEditReview, refreshTrigger, bookDataRefetch }: ReviewListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
 
@@ -54,6 +55,7 @@ export default function ReviewList({ bookId, onEditReview, refreshTrigger }: Rev
         variables: { id: reviewId },
       });
       refetch();
+      bookDataRefetch();
     } catch (error) {
       console.error('Error deleting review:', error);
       alert('Failed to delete review. Please try again.');

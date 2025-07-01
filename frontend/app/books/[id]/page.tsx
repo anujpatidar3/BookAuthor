@@ -234,6 +234,7 @@ export default function BookDetailPage() {
               bookId={bookId} 
               onEditReview={handleEditReview}
               refreshTrigger={reviewRefreshTrigger}
+              bookDataRefetch={refetch}
             />
           </div>
         </div>
