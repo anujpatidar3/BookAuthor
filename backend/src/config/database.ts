@@ -10,6 +10,12 @@ const sequelize = new Sequelize(config.database.url, {
     acquire: 30000,
     idle: 10000,
   },
+  dialectOptions: {
+    ssl: {
+      require: true,
+      ca:config.database.caCertificate
+    }
+  },
 });
 
 export default sequelize;

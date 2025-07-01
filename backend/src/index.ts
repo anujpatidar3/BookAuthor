@@ -95,8 +95,8 @@ async function startServer() {
       console.log(`📊 Health check available at http://localhost:${PORT}/health`);
     });
 
-  } catch (error) {
-    console.error('Failed to start server:', error);
+  } catch (error: any) {
+    console.error('Failed to start: ', error);
     process.exit(1);
   }
 }

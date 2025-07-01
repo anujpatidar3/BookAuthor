@@ -1,6 +1,10 @@
 import dotenv from 'dotenv';
 
 dotenv.config();
+if (!process.env.CA_CERTIFICATE) {
+  throw new Error("Missing CA_CERTIFICATE in environment variables");
+}
+const caCert = Buffer.from(process.env.CA_CERTIFICATE, 'base64').toString('utf-8');
 
 export const config = {
   port: parseInt(process.env.PORT || '4000', 10),
@@ -10,6 +14,7 @@ export const config = {
   database: {
     url: process.env.DATABASE_URL || 'postgresql://username:password@localhost:5432/bookauthor_db',
     mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/bookauthor_metadata',
+    caCertificate: caCert ? caCert : undefined,
   },
    // CORS Configuration
   cors: {
