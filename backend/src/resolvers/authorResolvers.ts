@@ -4,6 +4,7 @@ import Book from '../models/Book';
 import AuthorMetadata from '../models/AuthorMetadata';
 import { calculatePagination } from '../utils/pagination';
 import { buildAuthorWhereClause, AuthorFilterInput } from '../utils/filters';
+import { deleteImageFromCloudinary, extractPublicIdFromUrl } from '../utils/imageUpload';
 import { Op } from 'sequelize';
 
 export const authorResolvers = {
@@ -137,6 +138,20 @@ export const authorResolvers = {
         if (profileImageUrl !== undefined) {
           const metadata = await AuthorMetadata.findOne({ authorId: parseInt(id) });
           
+          // If there's an existing image and we're updating it, delete the old one
+          if (metadata && metadata.profileImageUrl && profileImageUrl !== metadata.profileImageUrl) {
+            const oldPublicId = extractPublicIdFromUrl(metadata.profileImageUrl);
+            if (oldPublicId) {
+              try {
+                await deleteImageFromCloudinary(oldPublicId);
+                console.log('Deleted old author image:', oldPublicId);
+              } catch (error) {
+                console.error('Failed to delete old author image:', error);
+                // Don't throw error, continue with update
+              }
+            }
+          }
+          
           if (metadata) {
             metadata.profileImageUrl = profileImageUrl;
             await metadata.save();
@@ -174,6 +189,21 @@ export const authorResolvers = {
         const bookCount = await Book.count({ where: { author_id: id } });
         if (bookCount > 0) {
           throw new GraphQLError('Cannot delete author who has books. Please delete or reassign the books first.');
+        }
+
+        // Get author metadata to delete profile image
+        const metadata = await AuthorMetadata.findOne({ authorId: parseInt(id) });
+        if (metadata && metadata.profileImageUrl) {
+          const publicId = extractPublicIdFromUrl(metadata.profileImageUrl);
+          if (publicId) {
+            try {
+              await deleteImageFromCloudinary(publicId);
+              console.log('Deleted author profile image:', publicId);
+            } catch (error) {
+              console.error('Failed to delete author profile image:', error);
+              // Don't throw error, continue with deletion
+            }
+          }
         }
 
         // Delete associated metadata

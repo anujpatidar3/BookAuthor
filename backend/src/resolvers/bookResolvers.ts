@@ -5,6 +5,7 @@ import BookMetadata from '../models/BookMetadata';
 import Review from '../models/Review';
 import { calculatePagination } from '../utils/pagination';
 import { buildBookWhereClause, BookFilterInput } from '../utils/filters';
+import { deleteImageFromCloudinary, extractPublicIdFromUrl } from '../utils/imageUpload';
 import { Op } from 'sequelize';
 
 export const bookResolvers = {
@@ -178,6 +179,20 @@ export const bookResolvers = {
         if (coverImageUrl !== undefined) {
           const metadata = await BookMetadata.findOne({ bookId: parseInt(id) });
           
+          // If there's an existing image and we're updating it, delete the old one
+          if (metadata && metadata.coverImageUrl && coverImageUrl !== metadata.coverImageUrl) {
+            const oldPublicId = extractPublicIdFromUrl(metadata.coverImageUrl);
+            if (oldPublicId) {
+              try {
+                await deleteImageFromCloudinary(oldPublicId);
+                console.log('Deleted old book cover image:', oldPublicId);
+              } catch (error) {
+                console.error('Failed to delete old book cover image:', error);
+                // Don't throw error, continue with update
+              }
+            }
+          }
+          
           if (metadata) {
             metadata.coverImageUrl = coverImageUrl;
             await metadata.save();
@@ -209,6 +224,21 @@ export const bookResolvers = {
         const book = await Book.findByPk(id);
         if (!book) {
           throw new GraphQLError('Book not found');
+        }
+
+        // Get book metadata to delete cover image
+        const metadata = await BookMetadata.findOne({ bookId: parseInt(id) });
+        if (metadata && metadata.coverImageUrl) {
+          const publicId = extractPublicIdFromUrl(metadata.coverImageUrl);
+          if (publicId) {
+            try {
+              await deleteImageFromCloudinary(publicId);
+              console.log('Deleted book cover image:', publicId);
+            } catch (error) {
+              console.error('Failed to delete book cover image:', error);
+              // Don't throw error, continue with deletion
+            }
+          }
         }
 
         // Delete associated metadata and reviews
