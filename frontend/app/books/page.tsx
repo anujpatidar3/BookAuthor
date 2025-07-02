@@ -101,7 +101,7 @@ export default function BooksPage() {
             <input
               type="text"
               placeholder="Search books by title..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full pl-10 pr-3 py-2 text-gray-700 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
@@ -153,7 +153,7 @@ export default function BooksPage() {
                   <input
                     type="text"
                     placeholder="Filter by author name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     onChange={(e) => handleFilterChange({ ...filters, author: e.target.value })}
                   />
                 </div>
@@ -163,7 +163,7 @@ export default function BooksPage() {
                   </label>
                   <input
                     type="date"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     onChange={(e) => handleFilterChange({ ...filters, published_date_from: e.target.value })}
                   />
                 </div>
@@ -173,7 +173,7 @@ export default function BooksPage() {
                   </label>
                   <input
                     type="date"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     onChange={(e) => handleFilterChange({ ...filters, published_date_to: e.target.value })}
                   />
                 </div>
