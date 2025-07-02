@@ -64,14 +64,14 @@ async function startServer() {
     // Start Apollo Server
     await server.start();
 
-    // Apply global middleware
-    app.use(bodyParser.json({ limit: '50mb' }));
-    app.use(bodyParser.urlencoded({ extended: true }));
-
-    // Apply GraphQL-specific middleware and endpoint
-    app.use('/graphql', cors(config.cors));
-    app.use('/graphql', graphqlUploadExpress({ maxFileSize: 5000000, maxFiles: 1 })); // 5MB limit, 1 file
-    app.use('/graphql', expressMiddleware(server) as any);
+    app.use(
+      '/graphql',
+      cors(config.cors),
+      bodyParser.json({ limit: '50mb' }),
+      bodyParser.urlencoded({ extended: true }),
+      graphqlUploadExpress({ maxFileSize: 5000000, maxFiles: 1 }),
+      expressMiddleware(server) as any
+    );
 
     // Health check endpoint
     app.get('/health', (req, res) => {
