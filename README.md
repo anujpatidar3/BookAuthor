@@ -1,3 +1,11 @@
+### Live Server
+
+Hosted URL: https://book-author-six.vercel.app/
+Frontend is hosted on Vercel: https://book-author-six.vercel.app/
+Backend is hosted on Render: https://bookauthor.onrender.com/
+
+Note - It might take some time for the data to load on the first go, as APIs get spinned down every 15 minutes of inactivity on Render's free tier. 
+
 ### Backend 
 
 Installation and running server
