@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
 import { useMutation } from '@apollo/client';
 import { X, Image as ImageIcon } from 'lucide-react';
@@ -103,10 +104,11 @@ export function ImageUpload({
       {value ? (
         <div className="relative">
           <div className={`relative ${getImageDimensions()} rounded-lg overflow-hidden border-2 border-gray-200`}>
-            <img
+            <Image
               src={value}
               alt="Uploaded image"
               className="w-full h-full object-cover"
+              fill
             />
             {!disabled && (
               <button

@@ -92,12 +92,12 @@ export function capitalizeFirst(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 }
 
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
+export function debounce<Args extends unknown[], Return>(
+  func: (...args: Args) => Return,
   wait: number
-): (...args: Parameters<T>) => void {
+): (...args: Args) => void {
   let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
+  return (...args: Args) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };

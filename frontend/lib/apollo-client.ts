@@ -15,12 +15,12 @@ const client = new ApolloClient({
       Query: {
         fields: {
           books: {
-            merge(_existing = { books: [], pagination: {} }, incoming: any) {
+            merge(_, incoming: { books: unknown[]; pagination: unknown }) {
               return incoming;
             },
           },
           authors: {
-            merge(_existing = { authors: [], pagination: {} }, incoming: any) {
+            merge(_, incoming: { authors: unknown[]; pagination: unknown }) {
               return incoming;
             },
           },

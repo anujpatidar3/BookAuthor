@@ -9,8 +9,9 @@ import ReviewForm from '@/components/ReviewForm';
 import ReviewList from '@/components/ReviewList';
 import { GET_BOOK } from '@/lib/queries';
 import { Book } from '@/types';
-import { formatDate, formatYear, renderStars } from '@/lib/utils';
+import { formatDate, renderStars } from '@/lib/utils';
 import { ArrowLeft, Calendar, User, Star, MessageSquare, Edit } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function BookDetailPage() {
@@ -20,7 +21,12 @@ export default function BookDetailPage() {
   
   // Review modal state
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
-  const [editingReview, setEditingReview] = useState<any>(null);
+  const [editingReview, setEditingReview] = useState<{
+    id: string;
+    rating: number;
+    comment: string;
+    reviewerName: string;
+  } | null>(null);
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
 
   const { data, loading, error, refetch } = useQuery(GET_BOOK, {
@@ -33,7 +39,12 @@ export default function BookDetailPage() {
     refetch(); // Refresh book data to update review count
   };
 
-  const handleEditReview = (review: any) => {
+  const handleEditReview = (review: {
+    id: string;
+    rating: number;
+    comment: string;
+    reviewerName: string;
+  }) => {
     setEditingReview(review);
     setIsReviewFormOpen(true);
   };
@@ -104,12 +115,13 @@ export default function BookDetailPage() {
             <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-8">
               {/* Book Cover Placeholder */}
               <div className="flex-shrink-0 mb-6 lg:mb-0">
-                <div className="w-48 h-72 bg-gradient-to-br from-blue-400 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                <div className="w-48 h-72 bg-gradient-to-br from-blue-400 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl relative">
                   {book.metadata?.coverImageUrl ? (
-                    <img
+                    <Image
                       src={book.metadata.coverImageUrl}
                       alt={book.title}
                       className="w-full h-full object-cover rounded-lg"
+                      fill
                     />
                   ) : (
                     <span className="text-center px-4">{book.title}</span>
