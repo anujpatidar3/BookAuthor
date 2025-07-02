@@ -2,11 +2,15 @@
 
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
-import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Filter, SortAsc, SortDesc } from 'lucide-react';
 import { Navigation } from '@/components/Navigation';
 import { BookList } from '@/components/BookCard';
 import { Pagination } from '@/components/Pagination';
 import { LoadingState } from '@/components/Loading';
+import { SearchBar } from '@/components/SearchBar';
+import { DateFilter } from '@/components/DateFilter';
+import { FilterPanel } from '@/components/FilterPanel';
+import { TextFilter } from '@/components/TextFilter';
 import { GET_BOOKS } from '@/lib/queries';
 import { BookConnection, BookFilterInput } from '@/types';
 import { debounce } from '@/lib/utils';
@@ -19,12 +23,33 @@ export default function BooksPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<BookFilterInput>({});
 
+  // Helper function to convert date strings to timestamps for GraphQL
+  const processFiltersForGraphQL = (filters: BookFilterInput) => {
+    // Create a copy without the date fields first
+    const { published_date_from, published_date_to, ...baseFilters } = filters;
+    
+    const processedFilters: typeof baseFilters & {
+      published_date_from?: number;
+      published_date_to?: number;
+    } = { ...baseFilters };
+    
+    // Convert date strings to timestamps
+    if (published_date_from) {
+      processedFilters.published_date_from = new Date(published_date_from).getTime();
+    }
+    if (published_date_to) {
+      processedFilters.published_date_to = new Date(published_date_to).getTime();
+    }
+    
+    return processedFilters;
+  };
+
   const { data, loading, error, refetch } = useQuery<{ books: BookConnection }>(GET_BOOKS, {
     variables: {
       page: currentPage,
       limit: 12,
       filter: {
-        ...filters,
+        ...processFiltersForGraphQL(filters),
         ...(searchTerm && { title: searchTerm }),
       },
       sortBy,
@@ -94,17 +119,10 @@ export default function BooksPage() {
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
           {/* Search Bar */}
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search books by title..."
-              className="block w-full pl-10 pr-3 py-2 text-gray-700 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
+          <SearchBar
+            placeholder="Search books by title..."
+            onSearch={handleSearch}
+          />
 
           {/* Sort and Filter Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
@@ -143,55 +161,31 @@ export default function BooksPage() {
           </div>
 
           {/* Filter Panel */}
-          {showFilters && (
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Author
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Filter by author name"
-                    className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    onChange={(e) => handleFilterChange({ ...filters, author: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Published From
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    onChange={(e) => handleFilterChange({ ...filters, published_date_from: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Published To
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    onChange={(e) => handleFilterChange({ ...filters, published_date_to: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={() => {
-                    setFilters({});
-                    setSearchTerm('');
-                    setCurrentPage(1);
-                  }}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Clear All
-                </button>
-              </div>
-            </div>
-          )}
+          <FilterPanel
+            isOpen={showFilters}
+            onClearAll={() => {
+              setFilters({});
+              setSearchTerm('');
+              setCurrentPage(1);
+            }}
+          >
+            <TextFilter
+              label="Author"
+              placeholder="Filter by author name"
+              value={filters.author || ''}
+              onChange={(value) => handleFilterChange({ ...filters, author: value })}
+            />
+            <DateFilter
+              label="Published From"
+              value={filters.published_date_from || ''}
+              onChange={(value) => handleFilterChange({ ...filters, published_date_from: value })}
+            />
+            <DateFilter
+              label="Published To"
+              value={filters.published_date_to || ''}
+              onChange={(value) => handleFilterChange({ ...filters, published_date_to: value })}
+            />
+          </FilterPanel>
         </div>
 
         {/* Content */}

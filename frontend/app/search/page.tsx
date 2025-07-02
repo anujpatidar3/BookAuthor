@@ -6,6 +6,7 @@ import { Navigation } from '@/components/Navigation';
 import { BookCard } from '@/components/BookCard';
 import { AuthorCard } from '@/components/AuthorCard';
 import { LoadingSpinner } from '@/components/Loading';
+import { SearchBar } from '@/components/SearchBar';
 import { GET_BOOKS, GET_AUTHORS } from '@/lib/queries';
 import { Book, Author } from '@/types';
 import { Search } from 'lucide-react';
@@ -60,16 +61,12 @@ export default function SearchPage() {
           <form onSubmit={handleSearch} className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search for books or authors..."
-                    className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
+                <SearchBar
+                  placeholder="Search for books or authors..."
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  onSearch={() => {}} // Not used in controlled mode
+                />
               </div>
               <div>
                 <select

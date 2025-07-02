@@ -2,11 +2,14 @@
 
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
-import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Filter, SortAsc, SortDesc } from 'lucide-react';
 import { Navigation } from '@/components/Navigation';
 import { AuthorList } from '@/components/AuthorCard';
 import { Pagination } from '@/components/Pagination';
 import { LoadingState } from '@/components/Loading';
+import { SearchBar } from '@/components/SearchBar';
+import { DateFilter } from '@/components/DateFilter';
+import { FilterPanel } from '@/components/FilterPanel';
 import { GET_AUTHORS } from '@/lib/queries';
 import { AuthorConnection, AuthorFilterInput } from '@/types';
 import { debounce } from '@/lib/utils';
@@ -54,7 +57,24 @@ export default function AuthorsPage() {
   };
 
   const handleFilterChange = (newFilters: AuthorFilterInput) => {
-    setFilters(newFilters);
+    // Validate year inputs before setting filters
+    const validatedFilters = { ...newFilters };
+    
+    // Only include born_year_from if it's a valid 4-digit year
+    if (validatedFilters.born_year_from) {
+      if (validatedFilters.born_year_from < 1000 || validatedFilters.born_year_from > 2100) {
+        delete validatedFilters.born_year_from;
+      }
+    }
+    
+    // Only include born_year_to if it's a valid 4-digit year
+    if (validatedFilters.born_year_to) {
+      if (validatedFilters.born_year_to < 1000 || validatedFilters.born_year_to > 2100) {
+        delete validatedFilters.born_year_to;
+      }
+    }
+    
+    setFilters(validatedFilters);
     setCurrentPage(1);
   };
 
@@ -94,17 +114,10 @@ export default function AuthorsPage() {
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
           {/* Search Bar */}
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search authors by name..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
+          <SearchBar
+            placeholder="Search authors by name..."
+            onSearch={handleSearch}
+          />
 
           {/* Sort and Filter Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
@@ -143,46 +156,39 @@ export default function AuthorsPage() {
           </div>
 
           {/* Filter Panel */}
-          {showFilters && (
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Born From (Year)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g., 1950"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    onChange={(e) => handleFilterChange({ ...filters, born_year_from: parseInt(e.target.value) || undefined })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Born To (Year)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g., 1990"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    onChange={(e) => handleFilterChange({ ...filters, born_year_to: parseInt(e.target.value) || undefined })}
-                  />
-                </div>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={() => {
-                    setFilters({});
-                    setSearchTerm('');
-                    setCurrentPage(1);
-                  }}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Clear All
-                </button>
-              </div>
-            </div>
-          )}
+          <FilterPanel
+            isOpen={showFilters}
+            onClearAll={() => {
+              setFilters({});
+              setSearchTerm('');
+              setCurrentPage(1);
+            }}
+          >
+            <DateFilter
+              label="Born From (Year)"
+              placeholder="e.g., 1950"
+              type="number"
+              min={1800}
+              max={new Date().getFullYear() + 1}
+              value={filters.born_year_from?.toString() || '1800'}
+              onChange={(value) => {
+                const year = parseInt(value) || undefined;
+                handleFilterChange({ ...filters, born_year_from: year });
+              }}
+            />
+            <DateFilter
+              label="Born To (Year)"
+              placeholder="e.g., 1990"
+              type="number"
+              min={1000}
+              max={new Date().getFullYear() + 1}
+              value={filters.born_year_to?.toString() || '2025'}
+              onChange={(value) => {
+                const year = parseInt(value) || undefined;
+                handleFilterChange({ ...filters, born_year_to: year });
+              }}
+            />
+          </FilterPanel>
         </div>
 
         {/* Content */}
