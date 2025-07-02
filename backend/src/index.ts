@@ -26,7 +26,8 @@ async function startServer() {
 
     // Trust proxy for production deployment (Render, Railway, etc.)
     if (config.nodeEnv === 'production') {
-      app.set('trust proxy', 1);
+      app.set('trust proxy', true);
+      console.log('Trust proxy enabled for production');
     }
 
     // Security middleware
@@ -40,6 +41,12 @@ async function startServer() {
       windowMs: config.rateLimit.windowMs,
       max: config.rateLimit.max,
       message: 'Too many requests from this IP, please try again later.',
+      standardHeaders: true,
+      legacyHeaders: false,
+      skip: (req) => {
+        // Skip rate limiting for health checks
+        return req.path === '/health' || req.path === '/';
+      }
     });
     app.use('/graphql', limiter);
 
@@ -64,14 +71,26 @@ async function startServer() {
     // Start Apollo Server
     await server.start();
 
-    app.use(
-      '/graphql',
+    // Apply global body parser middleware
+    app.use(express.json({ limit: '50mb' }));
+    app.use(express.urlencoded({ extended: true }));
+
+    // Apply GraphQL endpoint with CORS and upload middleware
+    app.use('/graphql', 
       cors(config.cors),
-      bodyParser.json({ limit: '50mb' }),
-      bodyParser.urlencoded({ extended: true }),
       graphqlUploadExpress({ maxFileSize: 5000000, maxFiles: 1 }),
       expressMiddleware(server) as any
     );
+
+    app.get('/', (req, res) => {
+      res.json({ 
+        message: 'BookAuthor API Server', 
+        graphql: '/graphql',
+        health: '/health',
+        environment: config.nodeEnv,
+        trustProxy: app.get('trust proxy')
+      });
+    });
 
     // Health check endpoint
     app.get('/health', (req, res) => {
