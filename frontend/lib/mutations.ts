@@ -39,12 +39,6 @@ export const UPDATE_BOOK = gql`
   }
 `;
 
-export const DELETE_BOOK = gql`
-  mutation DeleteBook($id: ID!) {
-    deleteBook(id: $id)
-  }
-`;
-
 // Author Mutations
 export const CREATE_AUTHOR = gql`
   mutation CreateAuthor($input: AuthorInput!) {

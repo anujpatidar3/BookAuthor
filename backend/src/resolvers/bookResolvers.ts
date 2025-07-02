@@ -2,6 +2,7 @@ import { GraphQLError } from 'graphql';
 import Book from '../models/Book';
 import Author from '../models/Author';
 import BookMetadata from '../models/BookMetadata';
+import AuthorMetadata from '../models/AuthorMetadata';
 import Review from '../models/Review';
 import { calculatePagination } from '../utils/pagination';
 import { buildBookWhereClause, BookFilterInput } from '../utils/filters';
@@ -144,6 +145,16 @@ export const bookResolvers = {
           coverImageUrl: coverImageUrl || null,
         });
 
+        try {
+          const authorMetadata = await AuthorMetadata.findOne({ authorId: bookData.author_id });
+          if (authorMetadata) {
+            authorMetadata.totalBooks += 1;
+            await authorMetadata.save();
+          }
+        } catch (error) {
+          console.error('Failed to update author totalBooks count:', error);
+        }
+
         return await Book.findByPk(book.id, {
           include: [{
             model: Author,
@@ -164,11 +175,29 @@ export const bookResolvers = {
           throw new GraphQLError('Book not found');
         }
 
-        // If author_id is being updated, verify new author exists
-        if (bookData.author_id) {
+        const oldAuthorId = book.author_id;
+
+        // If author_id is being updated, verify new author exists and handle metadata
+        if (bookData.author_id && bookData.author_id !== oldAuthorId) {
           const author = await Author.findByPk(bookData.author_id);
           if (!author) {
             throw new GraphQLError('Author not found');
+          }
+
+          try {
+            const oldAuthorMetadata = await AuthorMetadata.findOne({ authorId: oldAuthorId });
+            if (oldAuthorMetadata && oldAuthorMetadata.totalBooks > 0) {
+              oldAuthorMetadata.totalBooks -= 1;
+              await oldAuthorMetadata.save();
+            }
+
+            const newAuthorMetadata = await AuthorMetadata.findOne({ authorId: bookData.author_id });
+            if (newAuthorMetadata) {
+              newAuthorMetadata.totalBooks += 1;
+              await newAuthorMetadata.save();
+            }
+          } catch (error) {
+            console.error('Failed to update author totalBooks counts:', error);
           }
         }
 
@@ -215,39 +244,6 @@ export const bookResolvers = {
         });
       } catch (error) {
         throw new GraphQLError(`Failed to update book: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    },
-
-    deleteBook: async (_: any, { id }: { id: string }) => {
-      try {
-        const book = await Book.findByPk(id);
-        if (!book) {
-          throw new GraphQLError('Book not found');
-        }
-
-        // Get book metadata to delete cover image
-        const metadata = await BookMetadata.findOne({ bookId: parseInt(id) });
-        if (metadata && metadata.coverImageUrl) {
-          const publicId = extractPublicIdFromUrl(metadata.coverImageUrl);
-          if (publicId) {
-            try {
-              await deleteImageFromCloudinary(publicId);
-              console.log('Deleted book cover image:', publicId);
-            } catch (error) {
-              console.error('Failed to delete book cover image:', error);
-              // Don't throw error, continue with deletion
-            }
-          }
-        }
-
-        // Delete associated metadata and reviews
-        await BookMetadata.deleteOne({ bookId: parseInt(id) });
-        await Review.deleteMany({ bookId: parseInt(id) });
-
-        await book.destroy();
-        return true;
-      } catch (error) {
-        throw new GraphQLError(`Failed to delete book: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },
   },
