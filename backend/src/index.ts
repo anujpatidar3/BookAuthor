@@ -24,6 +24,11 @@ async function startServer() {
     const app = express();
     const httpServer = createServer(app);
 
+    // Trust proxy for production deployment (Render, Railway, etc.)
+    if (config.nodeEnv === 'production') {
+      app.set('trust proxy', 1);
+    }
+
     // Security middleware
     app.use(helmet({
       contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
@@ -59,10 +64,13 @@ async function startServer() {
     // Start Apollo Server
     await server.start();
 
-    // Apply middleware and GraphQL endpoint
+    // Apply global middleware
+    app.use(bodyParser.json({ limit: '50mb' }));
+    app.use(bodyParser.urlencoded({ extended: true }));
+
+    // Apply GraphQL-specific middleware and endpoint
     app.use('/graphql', cors(config.cors));
     app.use('/graphql', graphqlUploadExpress({ maxFileSize: 5000000, maxFiles: 1 })); // 5MB limit, 1 file
-    app.use('/graphql', bodyParser.json({ limit: '50mb' }));
     app.use('/graphql', expressMiddleware(server) as any);
 
     // Health check endpoint

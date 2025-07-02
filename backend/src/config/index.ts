@@ -18,7 +18,9 @@ export const config = {
   },
    // CORS Configuration
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL ? 
+      process.env.FRONTEND_URL.split(',').map(url => url.trim()) : 
+      'http://localhost:3000',
     credentials: true,
   },
   
