@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@apollo/client';
 import { Navigation } from '@/components/Navigation';
 import { ImageUpload } from '@/components/ImageUpload';
+import { TextInput } from '@/components/TextInput';
+import { TextArea } from '@/components/TextArea';
+import { SelectInput } from '@/components/SelectInput';
+import { DateInput } from '@/components/DateInput';
 import { CREATE_BOOK } from '@/lib/mutations';
 import { GET_AUTHORS } from '@/lib/queries';
 import { Author } from '@/types';
@@ -92,69 +96,40 @@ export default function NewBook() {
               </div>
             )}
 
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                Title *
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                  errors.title ? 'border-red-300' : ''
-                }`}
-                placeholder="Enter book title"
-              />
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-              )}
-            </div>
+            <TextInput
+              label="Title"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="Enter book title"
+              required
+              error={errors.title}
+            />
 
-            <div>
-              <label htmlFor="authorId" className="block text-sm font-medium text-gray-700">
-                Author *
-              </label>
-              <select
-                id="authorId"
-                name="authorId"
-                value={formData.authorId}
-                onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                  errors.authorId ? 'border-red-300' : ''
-                }`}
-                disabled={authorsLoading}
-              >
-                <option value="">Select an author</option>
-                {authorsData?.authors?.authors?.map((author: Author) => (
-                  <option key={author.id} value={author.id}>
-                    {author.name}
-                  </option>
-                ))}
-              </select>
-              {errors.authorId && (
-                <p className="mt-1 text-sm text-red-600">{errors.authorId}</p>
-              )}
-              {authorsLoading && (
-                <p className="mt-1 text-sm text-gray-500">Loading authors...</p>
-              )}
-            </div>
+            <SelectInput
+              label="Author"
+              name="authorId"
+              value={formData.authorId}
+              onChange={handleChange}
+              options={authorsData?.authors?.authors?.map((author: Author) => ({
+                value: author.id.toString(),
+                label: author.name
+              })) || []}
+              placeholder="Select an author"
+              required
+              error={errors.authorId}
+              loading={authorsLoading}
+              loadingText="Loading authors..."
+            />
 
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                rows={4}
-                value={formData.description}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Enter book description"
-              />
-            </div>
+            <TextArea
+              label="Description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Enter book description"
+              rows={4}
+            />
 
             <div>
               <ImageUpload
@@ -166,19 +141,13 @@ export default function NewBook() {
               />
             </div>
 
-            <div>
-              <label htmlFor="publishedDate" className="block text-sm font-medium text-gray-700">
-                Published Date
-              </label>
-              <input
-                type="date"
-                id="publishedDate"
-                name="publishedDate"
-                value={formData.publishedDate}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
+            <DateInput
+              label="Published Date"
+              name="publishedDate"
+              value={formData.publishedDate}
+              onChange={handleChange}
+              max={new Date().toISOString().split('T')[0]}
+            />
 
             <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <button

@@ -72,7 +72,7 @@ export default function SearchPage() {
                 <select
                   value={searchType}
                   onChange={(e) => setSearchType(e.target.value as 'all' | 'books' | 'authors')}
-                  className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="rounded-md border-gray-300 text-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="all">All</option>
                   <option value="books">Books Only</option>

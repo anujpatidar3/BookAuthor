@@ -141,7 +141,7 @@ export default function BooksPage() {
               <select
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-1 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="createdAt">Date Added</option>
                 <option value="title">Title</option>

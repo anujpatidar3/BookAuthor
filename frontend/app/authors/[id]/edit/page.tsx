@@ -6,6 +6,9 @@ import { useMutation, useQuery } from '@apollo/client';
 import { Navigation } from '@/components/Navigation';
 import { ImageUpload } from '@/components/ImageUpload';
 import { LoadingState } from '@/components/Loading';
+import { TextInput } from '@/components/TextInput';
+import { TextArea } from '@/components/TextArea';
+import { DateInput } from '@/components/DateInput';
 import { UPDATE_AUTHOR } from '@/lib/mutations';
 import { GET_AUTHOR } from '@/lib/queries';
 
@@ -130,40 +133,24 @@ export default function EditAuthor() {
               </div>
             )}
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Name *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                  errors.name ? 'border-red-300' : ''
-                }`}
-                placeholder="Enter author name"
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-              )}
-            </div>
+            <TextInput
+              label="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter author name"
+              required
+              error={errors.name}
+            />
 
-            <div>
-              <label htmlFor="biography" className="block text-sm font-medium text-gray-700">
-                Biography
-              </label>
-              <textarea
-                id="biography"
-                name="biography"
-                rows={6}
-                value={formData.biography}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Enter author biography"
-              />
-            </div>
+            <TextArea
+              label="Biography"
+              name="biography"
+              value={formData.biography}
+              onChange={handleChange}
+              placeholder="Enter author biography"
+              rows={6}
+            />
 
             <div>
               <ImageUpload
@@ -175,19 +162,12 @@ export default function EditAuthor() {
               />
             </div>
 
-            <div>
-              <label htmlFor="bornDate" className="block text-sm font-medium text-gray-700">
-                Born Date
-              </label>
-              <input
-                type="date"
-                id="bornDate"
-                name="bornDate"
-                value={formData.bornDate}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
+            <DateInput
+              label="Born Date"
+              name="bornDate"
+              value={formData.bornDate}
+              onChange={handleChange}
+            />
 
             <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <button
