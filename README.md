@@ -2,6 +2,8 @@
 
 Hosted URL: https://book-author-six.vercel.app/
 
+Quick Demo: https://www.loom.com/share/e9f59edf37d243b7b6944c1f1060bb9f?sid=72f48e34-6974-4660-a645-5cc63e450573
+
 Frontend is hosted on Vercel: https://book-author-six.vercel.app/
 
 Backend is hosted on Render: https://bookauthor.onrender.com/
