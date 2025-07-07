@@ -1,7 +1,65 @@
 import Link from 'next/link';
 import { BookOpen, Users, Plus, TrendingUp } from 'lucide-react';
+import { FeatureCard } from '@/components/FeatureCard';
+import { StatCard } from '@/components/StatCard';
 
 export default function Home() {
+  const featureCards = [
+    {
+      href: '/books',
+      icon: BookOpen,
+      title: 'Manage Books',
+      description: 'Add, edit, and organize your book collection with detailed information and metadata.',
+      iconColor: 'bg-blue-50 text-blue-600 group-hover:bg-blue-100',
+      titleColor: 'group-hover:text-blue-600'
+    },
+    {
+      href: '/authors',
+      icon: Users,
+      title: 'Author Profiles',
+      description: 'Create comprehensive author profiles with biographies, awards, and social links.',
+      iconColor: 'bg-green-50 text-green-600 group-hover:bg-green-100',
+      titleColor: 'group-hover:text-green-600'
+    },
+    {
+      href: '/books/new',
+      icon: Plus,
+      title: 'Add Content',
+      description: 'Quickly add new books and authors to expand your literary database.',
+      iconColor: 'bg-purple-50 text-purple-600 group-hover:bg-purple-100',
+      titleColor: 'group-hover:text-purple-600'
+    },
+    {
+      href: '/search',
+      icon: TrendingUp,
+      title: 'Discover & Search',
+      description: 'Find books and authors with powerful search and filtering capabilities.',
+      iconColor: 'bg-orange-50 text-orange-600 group-hover:bg-orange-100',
+      titleColor: 'group-hover:text-orange-600'
+    }
+  ];
+
+  const statCards = [
+    {
+      emoji: '📚',
+      title: 'Books',
+      description: 'Comprehensive book management with metadata, reviews, and ratings',
+      color: 'text-blue-600'
+    },
+    {
+      emoji: '👥',
+      title: 'Authors',
+      description: 'Detailed author profiles with biographies and social information',
+      color: 'text-green-600'
+    },
+    {
+      emoji: '⭐',
+      title: 'Reviews',
+      description: 'User reviews and ratings system for community engagement',
+      color: 'text-purple-600'
+    }
+  ];
+
   return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
@@ -32,81 +90,17 @@ export default function Home() {
         {/* Feature Cards */}
         <div className="mt-20">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <Link
-              href="/books"
-              className="group relative rounded-lg border border-gray-300 bg-white p-6 hover:shadow-lg transition-shadow"
-            >
-              <div>
-                <span className="rounded-lg inline-flex p-3 bg-blue-50 text-blue-600 group-hover:bg-blue-100">
-                  <BookOpen className="h-6 w-6" />
-                </span>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600">
-                  Manage Books
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Add, edit, and organize your book collection with detailed information and metadata.
-                </p>
-              </div>
-            </Link>
-
-            <Link
-              href="/authors"
-              className="group relative rounded-lg border border-gray-300 bg-white p-6 hover:shadow-lg transition-shadow"
-            >
-              <div>
-                <span className="rounded-lg inline-flex p-3 bg-green-50 text-green-600 group-hover:bg-green-100">
-                  <Users className="h-6 w-6" />
-                </span>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-medium text-gray-900 group-hover:text-green-600">
-                  Author Profiles
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Create comprehensive author profiles with biographies, awards, and social links.
-                </p>
-              </div>
-            </Link>
-
-            <Link
-              href="/books/new"
-              className="group relative rounded-lg border border-gray-300 bg-white p-6 hover:shadow-lg transition-shadow"
-            >
-              <div>
-                <span className="rounded-lg inline-flex p-3 bg-purple-50 text-purple-600 group-hover:bg-purple-100">
-                  <Plus className="h-6 w-6" />
-                </span>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-medium text-gray-900 group-hover:text-purple-600">
-                  Add Content
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Quickly add new books and authors to expand your literary database.
-                </p>
-              </div>
-            </Link>
-
-            <Link
-              href="/search"
-              className="group relative rounded-lg border border-gray-300 bg-white p-6 hover:shadow-lg transition-shadow"
-            >
-              <div>
-                <span className="rounded-lg inline-flex p-3 bg-orange-50 text-orange-600 group-hover:bg-orange-100">
-                  <TrendingUp className="h-6 w-6" />
-                </span>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-medium text-gray-900 group-hover:text-orange-600">
-                  Discover & Search
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Find books and authors with powerful search and filtering capabilities.
-                </p>
-              </div>
-            </Link>
+            {featureCards.map((card, index) => (
+              <FeatureCard
+                key={index}
+                href={card.href}
+                icon={card.icon}
+                title={card.title}
+                description={card.description}
+                iconColor={card.iconColor}
+                titleColor={card.titleColor}
+              />
+            ))}
           </div>
         </div>
 
@@ -117,27 +111,15 @@ export default function Home() {
               Platform Overview
             </h2>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">📚</div>
-                <div className="mt-2 text-lg font-medium text-gray-900">Books</div>
-                <div className="text-sm text-gray-500">
-                  Comprehensive book management with metadata, reviews, and ratings
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">👥</div>
-                <div className="mt-2 text-lg font-medium text-gray-900">Authors</div>
-                <div className="text-sm text-gray-500">
-                  Detailed author profiles with biographies and social information
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">⭐</div>
-                <div className="mt-2 text-lg font-medium text-gray-900">Reviews</div>
-                <div className="text-sm text-gray-500">
-                  User reviews and ratings system for community engagement
-                </div>
-              </div>
+              {statCards.map((stat, index) => (
+                <StatCard
+                  key={index}
+                  emoji={stat.emoji}
+                  title={stat.title}
+                  description={stat.description}
+                  color={stat.color}
+                />
+              ))}
             </div>
           </div>
         </div>
