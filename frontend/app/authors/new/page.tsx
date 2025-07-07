@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client';
-import { Navigation } from '@/components/Navigation';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TextInput } from '@/components/TextInput';
 import { TextArea } from '@/components/TextArea';
@@ -67,9 +66,6 @@ export default function NewAuthor() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -141,6 +137,5 @@ export default function NewAuthor() {
           </form>
         </div>
       </main>
-    </div>
   );
 }

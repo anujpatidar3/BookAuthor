@@ -1,12 +1,8 @@
 import Link from 'next/link';
 import { BookOpen, Users, Plus, TrendingUp } from 'lucide-react';
-import { Navigation } from '@/components/Navigation';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <div className="text-center">
@@ -146,6 +142,5 @@ export default function Home() {
           </div>
         </div>
       </main>
-    </div>
   );
 }

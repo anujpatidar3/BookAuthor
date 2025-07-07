@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
-import { Navigation } from '@/components/Navigation';
 import { BookCard } from '@/components/BookCard';
 import { AuthorCard } from '@/components/AuthorCard';
 import { LoadingSpinner } from '@/components/Loading';
@@ -43,9 +42,6 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
@@ -128,6 +124,5 @@ export default function SearchPage() {
           </div>
         )}
       </main>
-    </div>
   );
 }

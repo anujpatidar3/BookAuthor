@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { Filter, SortAsc, SortDesc } from 'lucide-react';
-import { Navigation } from '@/components/Navigation';
 import { AuthorList } from '@/components/AuthorCard';
 import { Pagination } from '@/components/Pagination';
 import { LoadingState } from '@/components/Loading';
@@ -80,8 +79,7 @@ export default function AuthorsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Authors</h1>
@@ -94,13 +92,11 @@ export default function AuthorsPage() {
             </button>
           </div>
         </div>
-      </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
