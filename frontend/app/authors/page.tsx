@@ -9,7 +9,7 @@ import { LoadingState } from '@/components/Loading';
 import { SearchBar } from '@/components/SearchBar';
 import { DateFilter } from '@/components/DateFilter';
 import { FilterPanel } from '@/components/FilterPanel';
-import { GET_AUTHORS } from '@/lib/queries';
+import { GET_AUTHORS_BASIC } from '@/lib/queries';
 import { AuthorConnection, AuthorFilterInput } from '@/types';
 import { debounce } from '@/lib/utils';
 
@@ -21,7 +21,7 @@ export default function AuthorsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<AuthorFilterInput>({});
 
-  const { data, loading, error, refetch } = useQuery<{ authors: AuthorConnection }>(GET_AUTHORS, {
+  const { data, loading, error, refetch } = useQuery<{ authors: AuthorConnection }>(GET_AUTHORS_BASIC, {
     variables: {
       page: currentPage,
       limit: 12,

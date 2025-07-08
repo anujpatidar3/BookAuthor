@@ -6,7 +6,7 @@ import { BookCard } from '@/components/BookCard';
 import { AuthorCard } from '@/components/AuthorCard';
 import { LoadingSpinner } from '@/components/Loading';
 import { SearchBar } from '@/components/SearchBar';
-import { GET_BOOKS, GET_AUTHORS } from '@/lib/queries';
+import { SEARCH_BOOKS, SEARCH_AUTHORS } from '@/lib/queries';
 import { Book, Author } from '@/types';
 import { Search } from 'lucide-react';
 
@@ -14,26 +14,18 @@ export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState<'all' | 'books' | 'authors'>('all');
 
-  const { data: booksData, loading: booksLoading } = useQuery(GET_BOOKS, {
-    variables: {
-      page: 1,
-      limit: 20,
-      filter: searchTerm ? { title: searchTerm } : undefined,
-    },
+  const { data: booksData, loading: booksLoading } = useQuery(SEARCH_BOOKS, {
+    variables: { query: searchTerm },
     skip: searchType === 'authors' || !searchTerm,
   });
 
-  const { data: authorsData, loading: authorsLoading } = useQuery(GET_AUTHORS, {
-    variables: {
-      page: 1,
-      limit: 20,
-      filter: searchTerm ? { name: searchTerm } : undefined,
-    },
+  const { data: authorsData, loading: authorsLoading } = useQuery(SEARCH_AUTHORS, {
+    variables: { query: searchTerm },
     skip: searchType === 'books' || !searchTerm,
   });
 
-  const books = booksData?.books?.books || [];
-  const authors = authorsData?.authors?.authors || [];
+  const books = booksData?.searchBooks || [];
+  const authors = authorsData?.searchAuthors || [];
   const isLoading = booksLoading || authorsLoading;
 
   const handleSearch = (e: React.FormEvent) => {

@@ -1,4 +1,4 @@
-import { GraphQLError } from 'graphql';
+import { GraphQLError, GraphQLResolveInfo } from 'graphql';
 import Book from '../models/Book';
 import Author from '../models/Author';
 import BookMetadata from '../models/BookMetadata';
@@ -7,6 +7,7 @@ import Review from '../models/Review';
 import { calculatePagination } from '../utils/pagination';
 import { buildBookWhereClause, BookFilterInput } from '../utils/filters';
 import { deleteImageFromCloudinary, extractPublicIdFromUrl } from '../utils/imageUpload';
+import { isNestedFieldRequested } from '../utils/graphqlHelpers';
 import { Op } from 'sequelize';
 
 export const bookResolvers = {
@@ -19,25 +20,33 @@ export const bookResolvers = {
         filter?: BookFilterInput;
         sortBy?: string;
         sortOrder?: string;
-      }
+      },
+      context: any,
+      info: GraphQLResolveInfo
     ) => {
       try {
         const { page = 1, limit = 10, filter, sortBy = 'createdAt', sortOrder = 'DESC' } = args;
         
         const whereClause = buildBookWhereClause(filter);
-        let includeClause: any[] = [{
-          model: Author,
-          as: 'author',
-          attributes: ['id', 'name'],
-        }];
+        let includeClause: any[] = [];
 
-        // Handle author name filtering
-        if (filter?.author) {
-          includeClause[0].where = {
-            name: {
-              [Op.iLike]: `%${filter.author}%`,
-            },
-          };
+        // Check if author field is requested in the books field
+        const isAuthorRequested = isNestedFieldRequested(info, 'books', 'author');
+
+        // Handle author name filtering - only include if filtering by author OR if author data is requested
+        if (filter?.author || isAuthorRequested) {
+          includeClause = [{
+            model: Author,
+            as: 'author',
+            attributes: ['id', 'name'],
+            ...(filter?.author && {
+              where: {
+                name: {
+                  [Op.iLike]: `%${filter.author}%`,
+                },
+              },
+            }),
+          }];
         }
 
         // Get total count
@@ -49,7 +58,7 @@ export const bookResolvers = {
         // Calculate pagination
         const { offset, limit: realLimit, pagination } = calculatePagination(page, limit, totalItems);
 
-        // Get books with pagination
+        // Get books with pagination - no eager loading of author
         const books = await Book.findAll({
           where: whereClause,
           include: includeClause,
@@ -69,12 +78,7 @@ export const bookResolvers = {
 
     book: async (_: any, { id }: { id: string }) => {
       try {
-        const book = await Book.findByPk(id, {
-          include: [{
-            model: Author,
-            as: 'author',
-          }],
-        });
+        const book = await Book.findByPk(id);
 
         if (!book) {
           throw new GraphQLError('Book not found');
@@ -103,6 +107,11 @@ export const bookResolvers = {
               },
             ],
           },
+          limit: 20,
+        });
+
+        // Also search books by author name
+        const booksByAuthor = await Book.findAll({
           include: [{
             model: Author,
             as: 'author',
@@ -111,12 +120,18 @@ export const bookResolvers = {
                 [Op.iLike]: `%${query}%`,
               },
             },
-            required: false,
+            attributes: [],
           }],
           limit: 20,
         });
 
-        return books;
+        // Combine and deduplicate results
+        const allBooks = [...books, ...booksByAuthor];
+        const uniqueBooks = allBooks.filter((book, index, self) => 
+          index === self.findIndex(b => b.id === book.id)
+        );
+
+        return uniqueBooks.slice(0, 20);
       } catch (error) {
         throw new GraphQLError(`Failed to search books: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
@@ -155,12 +170,7 @@ export const bookResolvers = {
           console.error('Failed to update author totalBooks count:', error);
         }
 
-        return await Book.findByPk(book.id, {
-          include: [{
-            model: Author,
-            as: 'author',
-          }],
-        });
+        return await Book.findByPk(book.id);
       } catch (error) {
         throw new GraphQLError(`Failed to create book: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
@@ -236,12 +246,7 @@ export const bookResolvers = {
           }
         }
 
-        return await Book.findByPk(id, {
-          include: [{
-            model: Author,
-            as: 'author',
-          }],
-        });
+        return await Book.findByPk(id);
       } catch (error) {
         throw new GraphQLError(`Failed to update book: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
@@ -249,8 +254,19 @@ export const bookResolvers = {
   },
 
   Book: {
-    metadata: async (parent: any) => {
+    author: async (parent: any, args: any, context: any, info: any) => {
       try {
+        // Only resolve if the author field is requested
+        return await Author.findByPk(parent.author_id);
+      } catch (error) {
+        console.error('Error fetching book author:', error);
+        return null;
+      }
+    },
+
+    metadata: async (parent: any, args: any, context: any, info: any) => {
+      try {
+        // Only resolve if the metadata field is requested
         return await BookMetadata.findOne({ bookId: parent.id });
       } catch (error) {
         console.error('Error fetching book metadata:', error);
@@ -258,8 +274,9 @@ export const bookResolvers = {
       }
     },
 
-    reviews: async (parent: any) => {
+    reviews: async (parent: any, args: any, context: any, info: any) => {
       try {
+        // Only resolve if the reviews field is requested
         return await Review.find({ bookId: parent.id })
           .sort({ createdAt: -1 })
           .limit(10);

@@ -120,24 +120,77 @@ export const GET_AUTHORS = gql`
   }
 `;
 
-export const GET_AUTHOR = gql`
-  query GetAuthor($id: ID!) {
+// Optimized query for authors without books (for performance)
+export const GET_AUTHORS_BASIC = gql`
+  query GetAuthorsBasic(
+    $page: Int
+    $limit: Int
+    $filter: AuthorFilterInput
+    $sortBy: String
+    $sortOrder: String
+  ) {
+    authors(
+      page: $page
+      limit: $limit
+      filter: $filter
+      sortBy: $sortBy
+      sortOrder: $sortOrder
+    ) {
+      authors {
+        id
+        name
+        biography
+        born_date
+        metadata {
+          totalBooks
+          averageRating
+          profileImageUrl
+        }
+        createdAt
+      }
+      pagination {
+        currentPage
+        totalPages
+        totalItems
+        hasNextPage
+        hasPrevPage
+      }
+    }
+  }
+`;
+
+// Query to get only author names (for dropdown)
+export const GET_AUTHOR_NAMES = gql`
+  query GetAuthors(
+    $page: Int
+    $limit: Int
+    $filter: AuthorFilterInput
+    $sortBy: String
+    $sortOrder: String
+  ) {
+    authors(
+      page: $page
+      limit: $limit
+      filter: $filter
+      sortBy: $sortBy
+      sortOrder: $sortOrder
+    ) {
+      authors {
+        id
+        name
+      }
+    }
+  }
+`;
+
+// Query for author without books (for performance when books aren't needed)
+export const GET_AUTHOR_BASIC = gql`
+  query GetAuthorBasic($id: ID!) {
     author(id: $id) {
       id
       name
       biography
       born_date
-      books {
-        id
-        title
-        description
-        published_date
-        metadata {
-          averageRating
-          totalReviews
-          coverImageUrl
-        }
-      }
       metadata {
         socialMedia {
           twitter
@@ -152,6 +205,45 @@ export const GET_AUTHOR = gql`
       }
       createdAt
       updatedAt
+    }
+  }
+`;
+
+// Separate query for getting books by author (can be used independently)
+export const GET_BOOKS_BY_AUTHOR = gql`
+  query GetBooksByAuthor(
+    $page: Int
+    $limit: Int
+    $filter: BookFilterInput
+    $sortBy: String
+    $sortOrder: String
+  ) {
+    books(
+      page: $page
+      limit: $limit
+      filter: $filter
+      sortBy: $sortBy
+      sortOrder: $sortOrder
+    ) {
+      books {
+        id
+        title
+        description
+        published_date
+        metadata {
+          averageRating
+          totalReviews
+          coverImageUrl
+        }
+        createdAt
+      }
+      pagination {
+        currentPage
+        totalPages
+        totalItems
+        hasNextPage
+        hasPrevPage
+      }
     }
   }
 `;

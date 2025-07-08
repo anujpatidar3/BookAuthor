@@ -51,12 +51,7 @@ export const authorResolvers = {
 
     author: async (_: any, { id }: { id: string }) => {
       try {
-        const author = await Author.findByPk(id, {
-          include: [{
-            model: Book,
-            as: 'books',
-          }],
-        });
+        const author = await Author.findByPk(id);
 
         if (!author) {
           throw new GraphQLError('Author not found');
@@ -111,12 +106,7 @@ export const authorResolvers = {
           profileImageUrl: profileImageUrl || null,
         });
 
-        return await Author.findByPk(author.id, {
-          include: [{
-            model: Book,
-            as: 'books',
-          }],
-        });
+        return await Author.findByPk(author.id);
       } catch (error) {
         throw new GraphQLError(`Failed to create author: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
@@ -166,12 +156,7 @@ export const authorResolvers = {
           }
         }
 
-        return await Author.findByPk(id, {
-          include: [{
-            model: Book,
-            as: 'books',
-          }],
-        });
+        return await Author.findByPk(id);
       } catch (error) {
         throw new GraphQLError(`Failed to update author: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }

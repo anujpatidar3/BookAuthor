@@ -3,7 +3,7 @@ export interface Author {
   name: string;
   biography?: string;
   born_date?: string;
-  books?: Book[];
+  books?: Book[]; // Already optional, which is correct
   metadata?: AuthorMetadata;
   createdAt: string;
   updatedAt: string;
@@ -15,7 +15,7 @@ export interface Book {
   description?: string;
   published_date?: string;
   author_id: number;
-  author: Author;
+  author?: Author; // Make author optional for basic queries
   metadata?: BookMetadata;
   reviews?: Review[];
   createdAt: string;

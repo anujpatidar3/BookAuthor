@@ -44,15 +44,17 @@ export function BookCard({ book }: BookCardProps) {
                 >
                   {book.title}
                 </Link>
-                <div className="flex items-center mt-1 text-sm text-gray-600">
-                  <User className="h-4 w-4 mr-1" />
-                  <Link 
-                    href={`/authors/${book.author.id}`}
-                    className="hover:text-blue-600 transition-colors"
-                  >
-                    {book.author.name}
-                  </Link>
-                </div>
+                {book.author && (
+                  <div className="flex items-center mt-1 text-sm text-gray-600">
+                    <User className="h-4 w-4 mr-1" />
+                    <Link 
+                      href={`/authors/${book.author.id}`}
+                      className="hover:text-blue-600 transition-colors"
+                    >
+                      {book.author.name}
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {/* Description */}

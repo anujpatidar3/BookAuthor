@@ -11,7 +11,7 @@ import { ImageUpload } from '@/components/ImageUpload';
 import { TextInput } from '@/components/TextInput';
 import { TextArea } from '@/components/TextArea';
 import { DateInput } from '@/components/DateInput';
-import { GET_AUTHOR, GET_BOOKS } from '@/lib/queries';
+import { GET_AUTHOR_BASIC, GET_BOOKS_BY_AUTHOR } from '@/lib/queries';
 import { DELETE_AUTHOR, UPDATE_AUTHOR } from '@/lib/mutations';
 import { Author, Book } from '@/types';
 import { User, Calendar, BookOpen, Edit, Trash2, Save, X } from 'lucide-react';
@@ -81,11 +81,11 @@ export default function AuthorDetail() {
     }
   };
 
-  const { data: authorData, loading: authorLoading, error: authorError } = useQuery(GET_AUTHOR, {
+  const { data: authorData, loading: authorLoading, error: authorError } = useQuery(GET_AUTHOR_BASIC, {
     variables: { id: authorId }
   });
 
-  const { data: booksData, loading: booksLoading } = useQuery(GET_BOOKS, {
+  const { data: booksData, loading: booksLoading } = useQuery(GET_BOOKS_BY_AUTHOR, {
     variables: {
       page: 1,
       limit: 20,

@@ -11,7 +11,7 @@ import { TextInput } from '@/components/TextInput';
 import { TextArea } from '@/components/TextArea';
 import { SelectInput } from '@/components/SelectInput';
 import { DateInput } from '@/components/DateInput';
-import { GET_BOOK, GET_AUTHORS } from '@/lib/queries';
+import { GET_BOOK, GET_AUTHOR_NAMES } from '@/lib/queries';
 import { UPDATE_BOOK } from '@/lib/mutations';
 import { Book, Author } from '@/types';
 import { formatDate, renderStars } from '@/lib/utils';
@@ -56,8 +56,9 @@ export default function BookDetailPage() {
     errorPolicy: 'all',
   });
 
-  const { data: authorsData, loading: authorsLoading } = useQuery(GET_AUTHORS, {
-    variables: { page: 1, limit: 100 }
+  const { data: authorsData, loading: authorsLoading } = useQuery(GET_AUTHOR_NAMES, {
+    variables: { page: 1, limit: 100 },
+    skip: !isEditMode, 
   });
 
   const [updateBook, { loading: updating }] = useMutation(UPDATE_BOOK, {
@@ -353,10 +354,10 @@ export default function BookDetailPage() {
                     <span className="text-lg text-gray-700">
                       by{' '}
                       <Link
-                        href={`/authors/${book.author.id}`}
+                        href={`/authors/${book?.author?.id}`}
                         className="text-blue-600 hover:text-blue-700 font-medium"
                       >
-                        {book.author.name}
+                        {book?.author?.name}
                       </Link>
                     </span>
                   </div>
