@@ -7,14 +7,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { BookCard } from '@/components/BookCard';
 import { LoadingSpinner } from '@/components/Loading';
-import { ImageUpload } from '@/components/ImageUpload';
-import { TextInput } from '@/components/TextInput';
-import { TextArea } from '@/components/TextArea';
-import { DateInput } from '@/components/DateInput';
+import { AuthorForm, AuthorFormData } from '@/components/AuthorForm';
 import { GET_AUTHOR_BASIC, GET_BOOKS_BY_AUTHOR } from '@/lib/queries';
 import { DELETE_AUTHOR, UPDATE_AUTHOR } from '@/lib/mutations';
 import { Author, Book } from '@/types';
-import { User, Calendar, BookOpen, Edit, Trash2, Save, X } from 'lucide-react';
+import { User, Calendar, BookOpen, Edit, Trash2 } from 'lucide-react';
 
 export default function AuthorDetail() {
   const params = useParams();
@@ -33,7 +30,7 @@ export default function AuthorDetail() {
   const [isDeleting, setIsDeleting] = useState(false);
   
   // Form state for edit mode
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<AuthorFormData>({
     name: '',
     biography: '',
     bornDate: '',
@@ -109,9 +106,7 @@ export default function AuthorDetail() {
   }, [authorData, isEditMode]);
 
   // Form handlers
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (formData: AuthorFormData) => {
     // Basic validation
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = 'Name is required';
@@ -120,6 +115,9 @@ export default function AuthorDetail() {
       setErrors(newErrors);
       return;
     }
+
+    // Clear errors if validation passes
+    setErrors({});
 
     try {
       await updateAuthor({
@@ -135,37 +133,33 @@ export default function AuthorDetail() {
       });
     } catch (error) {
       console.error('Error submitting form:', error);
+      setErrors({ general: 'Failed to update author. Please try again.' });
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+  const handleEditCancel = () => {
+    // Cancel edit - reset form data
+    if (authorData?.author) {
+      const author = authorData.author;
+      setFormData({
+        name: author.name || '',
+        biography: author.biography || '',
+        bornDate: author.born_date 
+          ? new Date(author.born_date).toISOString().split('T')[0] 
+          : '',
+        profileImageUrl: author.metadata?.profileImageUrl || ''
+      });
     }
+    setErrors({});
+    // Update URL to remove edit parameter
+    const url = new URL(window.location.href);
+    url.searchParams.delete('edit');
+    window.history.replaceState({}, '', url.toString());
+    setIsEditMode(false);
   };
 
   const handleEditToggle = () => {
-    if (isEditMode) {
-      // Cancel edit - reset form data
-      if (authorData?.author) {
-        const author = authorData.author;
-        setFormData({
-          name: author.name || '',
-          biography: author.biography || '',
-          bornDate: author.born_date 
-            ? new Date(author.born_date).toISOString().split('T')[0] 
-            : '',
-          profileImageUrl: author.metadata?.profileImageUrl || ''
-        });
-      }
-      setErrors({});
-      // Update URL to remove edit parameter
-      const url = new URL(window.location.href);
-      url.searchParams.delete('edit');
-      window.history.replaceState({}, '', url.toString());
-    } else {
+    if (!isEditMode) {
       // Enter edit mode
       const url = new URL(window.location.href);
       url.searchParams.set('edit', 'true');
@@ -209,74 +203,15 @@ export default function AuthorDetail() {
         <div className="bg-white shadow rounded-lg mb-8">
           {isEditMode ? (
             // Edit Form
-            <form onSubmit={handleSubmit} className="px-6 py-8">
-              <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Edit Author</h1>
-                <div className="flex space-x-3">
-                  <button
-                    type="button"
-                    onClick={handleEditToggle}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                    disabled={updating}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={updating}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {updating ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </div>
-
-              {errors.general && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-                  <p className="text-sm text-red-600">{errors.general}</p>
-                </div>
-              )}
-
-              <div className="space-y-6">
-                <TextInput
-                  label="Name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter author name"
-                  required
-                  error={errors.name}
-                />
-
-                <TextArea
-                  label="Biography"
-                  name="biography"
-                  value={formData.biography}
-                  onChange={handleChange}
-                  placeholder="Enter author biography"
-                  rows={6}
-                />
-
-                <div>
-                  <ImageUpload
-                    type="author"
-                    label="Profile Image"
-                    value={formData.profileImageUrl}
-                    onChange={(url) => setFormData(prev => ({ ...prev, profileImageUrl: url || '' }))}
-                    disabled={updating}
-                  />
-                </div>
-
-                <DateInput
-                  label="Born Date"
-                  name="bornDate"
-                  value={formData.bornDate}
-                  onChange={handleChange}
-                />
-              </div>
-            </form>
+            <AuthorForm
+              mode="edit"
+              initialData={formData}
+              author={author}
+              loading={updating}
+              errors={errors}
+              onSubmit={handleSubmit}
+              onCancel={handleEditCancel}
+            />
           ) : (
             // View Mode
             <div className="px-6 py-8">

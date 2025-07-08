@@ -4,6 +4,9 @@ export { TextArea } from './TextArea';
 export { SelectInput } from './SelectInput';
 export { DateInput } from './DateInput';
 
+// Form Components
+export { AuthorForm } from './AuthorForm';
+
 // Filter Components  
 export { DateFilter } from './DateFilter';
 export { TextFilter } from './TextFilter';
