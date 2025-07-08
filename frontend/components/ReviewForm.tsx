@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
-import { Star, X } from 'lucide-react';
-import { CREATE_REVIEW, UPDATE_REVIEW } from '../lib/mutations';
+"use client";
+
+import React, { useState } from "react";
+import { useMutation } from "@apollo/client";
+import { Star, X } from "lucide-react";
+import { CREATE_REVIEW, UPDATE_REVIEW } from "../lib/mutations";
 
 interface ReviewFormProps {
   bookId: string;
@@ -16,11 +18,19 @@ interface ReviewFormProps {
   } | null;
 }
 
-export default function ReviewForm({ bookId, isOpen, onClose, onSuccess, editingReview }: ReviewFormProps) {
+export default function ReviewForm({
+  bookId,
+  isOpen,
+  onClose,
+  onSuccess,
+  editingReview,
+}: ReviewFormProps) {
   const [rating, setRating] = useState(editingReview?.rating || 0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [comment, setComment] = useState(editingReview?.comment || '');
-  const [reviewerName, setReviewerName] = useState(editingReview?.reviewerName || '');
+  const [comment, setComment] = useState(editingReview?.comment || "");
+  const [reviewerName, setReviewerName] = useState(
+    editingReview?.reviewerName || ""
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [createReview] = useMutation(CREATE_REVIEW);
@@ -28,19 +38,19 @@ export default function ReviewForm({ bookId, isOpen, onClose, onSuccess, editing
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (rating === 0) {
-      alert('Please select a rating');
+      alert("Please select a rating");
       return;
     }
 
     if (!comment.trim()) {
-      alert('Please write a comment');
+      alert("Please write a comment");
       return;
     }
 
     if (!reviewerName.trim()) {
-      alert('Please enter your name');
+      alert("Please enter your name");
       return;
     }
 
@@ -72,13 +82,13 @@ export default function ReviewForm({ bookId, isOpen, onClose, onSuccess, editing
 
       // Reset form
       setRating(0);
-      setComment('');
-      setReviewerName('');
+      setComment("");
+      setReviewerName("");
       onClose();
       onSuccess?.();
     } catch (error) {
-      console.error('Error submitting review:', error);
-      alert('Failed to submit review. Please try again.');
+      console.error("Error submitting review:", error);
+      alert("Failed to submit review. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -90,8 +100,8 @@ export default function ReviewForm({ bookId, isOpen, onClose, onSuccess, editing
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold">
-            {editingReview ? 'Edit Review' : 'Write a Review'}
+          <h2 className="text-xl font-bold text-gray-700">
+            {editingReview ? "Edit Review" : "Write a Review"}
           </h2>
           <button
             onClick={onClose}
@@ -120,8 +130,8 @@ export default function ReviewForm({ bookId, isOpen, onClose, onSuccess, editing
                   <Star
                     className={`h-8 w-8 ${
                       star <= (hoveredRating || rating)
-                        ? 'text-yellow-400 fill-current'
-                        : 'text-gray-300'
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
                     }`}
                   />
                 </button>
@@ -129,7 +139,7 @@ export default function ReviewForm({ bookId, isOpen, onClose, onSuccess, editing
             </div>
             {rating > 0 && (
               <p className="text-sm text-gray-600 mt-1">
-                {rating} star{rating !== 1 ? 's' : ''}
+                {rating} star{rating !== 1 ? "s" : ""}
               </p>
             )}
           </div>
@@ -137,7 +147,10 @@ export default function ReviewForm({ bookId, isOpen, onClose, onSuccess, editing
           {/* Reviewer Name */}
           {!editingReview && (
             <div>
-              <label htmlFor="reviewerName" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="reviewerName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Your Name *
               </label>
               <input
@@ -154,7 +167,10 @@ export default function ReviewForm({ bookId, isOpen, onClose, onSuccess, editing
 
           {/* Comment */}
           <div>
-            <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="comment"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Your Review *
             </label>
             <textarea
@@ -183,7 +199,11 @@ export default function ReviewForm({ bookId, isOpen, onClose, onSuccess, editing
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : editingReview ? 'Update Review' : 'Submit Review'}
+              {isSubmitting
+                ? "Submitting..."
+                : editingReview
+                ? "Update Review"
+                : "Submit Review"}
             </button>
           </div>
         </form>

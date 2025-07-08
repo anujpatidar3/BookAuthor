@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
-import { Star, MessageSquare, Edit, Trash2, ThumbsUp } from 'lucide-react';
-import { GET_REVIEWS } from '../lib/queries';
-import { DELETE_REVIEW, MARK_REVIEW_HELPFUL } from '../lib/mutations';
-import { formatDate } from '../lib/utils';
+"use client";
+import React, { useState } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+import { Star, MessageSquare, Edit, Trash2, ThumbsUp } from "lucide-react";
+import { GET_REVIEWS } from "../lib/queries";
+import { DELETE_REVIEW, MARK_REVIEW_HELPFUL } from "../lib/mutations";
+import { formatDate } from "../lib/utils";
 
 interface Review {
   id: string;
@@ -22,7 +23,12 @@ interface ReviewListProps {
   refreshTrigger?: number;
 }
 
-export default function ReviewList({ bookId, onEditReview, refreshTrigger, bookDataRefetch }: ReviewListProps) {
+export default function ReviewList({
+  bookId,
+  onEditReview,
+  refreshTrigger,
+  bookDataRefetch,
+}: ReviewListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
 
@@ -45,7 +51,7 @@ export default function ReviewList({ bookId, onEditReview, refreshTrigger, bookD
   }, [refreshTrigger, refetch]);
 
   const handleDeleteReview = async (reviewId: string) => {
-    if (!confirm('Are you sure you want to delete this review?')) {
+    if (!confirm("Are you sure you want to delete this review?")) {
       return;
     }
 
@@ -57,8 +63,8 @@ export default function ReviewList({ bookId, onEditReview, refreshTrigger, bookD
       refetch();
       bookDataRefetch();
     } catch (error) {
-      console.error('Error deleting review:', error);
-      alert('Failed to delete review. Please try again.');
+      console.error("Error deleting review:", error);
+      alert("Failed to delete review. Please try again.");
     } finally {
       setDeletingReviewId(null);
     }
@@ -71,7 +77,7 @@ export default function ReviewList({ bookId, onEditReview, refreshTrigger, bookD
       });
       refetch();
     } catch (error) {
-      console.error('Error marking review helpful:', error);
+      console.error("Error marking review helpful:", error);
     }
   };
 
@@ -82,7 +88,7 @@ export default function ReviewList({ bookId, onEditReview, refreshTrigger, bookD
           <Star
             key={star}
             className={`h-4 w-4 ${
-              star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+              star <= rating ? "text-yellow-400 fill-current" : "text-gray-300"
             }`}
           />
         ))}
@@ -128,7 +134,9 @@ export default function ReviewList({ bookId, onEditReview, refreshTrigger, bookD
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-2">
-                <span className="font-medium text-gray-900">{review.reviewerName}</span>
+                <span className="font-medium text-gray-900">
+                  {review.reviewerName}
+                </span>
                 {renderStars(review.rating)}
                 <span className="text-sm text-gray-500">
                   {formatDate(review.createdAt)}
@@ -173,7 +181,7 @@ export default function ReviewList({ bookId, onEditReview, refreshTrigger, bookD
       {pagination && pagination.totalPages > 1 && (
         <div className="flex justify-center space-x-2 mt-6">
           <button
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
             className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-200"
           >
@@ -183,7 +191,11 @@ export default function ReviewList({ bookId, onEditReview, refreshTrigger, bookD
             Page {currentPage} of {pagination.totalPages}
           </span>
           <button
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.totalPages))}
+            onClick={() =>
+              setCurrentPage((prev) =>
+                Math.min(prev + 1, pagination.totalPages)
+              )
+            }
             disabled={currentPage === pagination.totalPages}
             className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-200"
           >
