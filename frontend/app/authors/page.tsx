@@ -1,27 +1,30 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useQuery } from '@apollo/client';
-import { Filter, SortAsc, SortDesc } from 'lucide-react';
-import { AuthorList } from '@/components/AuthorCard';
-import { Pagination } from '@/components/Pagination';
-import { LoadingState } from '@/components/Loading';
-import { SearchBar } from '@/components/SearchBar';
-import { DateFilter } from '@/components/DateFilter';
-import { FilterPanel } from '@/components/FilterPanel';
-import { GET_AUTHORS_BASIC } from '@/lib/queries';
-import { AuthorConnection, AuthorFilterInput } from '@/types';
-import { debounce } from '@/lib/utils';
+import { useState } from "react";
+import { useQuery } from "@apollo/client";
+import { Filter, SortAsc, SortDesc } from "lucide-react";
+import { AuthorList } from "@/components/AuthorCard";
+import { Pagination } from "@/components/Pagination";
+import { LoadingState } from "@/components/Loading";
+import { SearchBar } from "@/components/SearchBar";
+import { SelectInput } from "@/components";
+import { DateFilter } from "@/components/DateFilter";
+import { FilterPanel } from "@/components/FilterPanel";
+import { GET_AUTHORS_BASIC } from "@/lib/queries";
+import { AuthorConnection, AuthorFilterInput } from "@/types";
+import { debounce } from "@/lib/utils";
 
 export default function AuthorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState('DESC');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("DESC");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<AuthorFilterInput>({});
 
-  const { data, loading, error, refetch } = useQuery<{ authors: AuthorConnection }>(GET_AUTHORS_BASIC, {
+  const { data, loading, error, refetch } = useQuery<{
+    authors: AuthorConnection;
+  }>(GET_AUTHORS_BASIC, {
     variables: {
       page: currentPage,
       limit: 12,
@@ -32,7 +35,7 @@ export default function AuthorsPage() {
       sortBy,
       sortOrder,
     },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 
   const handleSearch = debounce((term: string) => {
@@ -42,15 +45,15 @@ export default function AuthorsPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSortChange = (newSortBy: string) => {
     if (newSortBy === sortBy) {
-      setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
+      setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
     } else {
       setSortBy(newSortBy);
-      setSortOrder('DESC');
+      setSortOrder("DESC");
     }
     setCurrentPage(1);
   };
@@ -58,46 +61,52 @@ export default function AuthorsPage() {
   const handleFilterChange = (newFilters: AuthorFilterInput) => {
     // Validate year inputs before setting filters
     const validatedFilters = { ...newFilters };
-    
+
     // Only include born_year_from if it's a valid 4-digit year
     if (validatedFilters.born_year_from) {
-      if (validatedFilters.born_year_from < 1000 || validatedFilters.born_year_from > 2100) {
+      if (
+        validatedFilters.born_year_from < 1000 ||
+        validatedFilters.born_year_from > 2100
+      ) {
         delete validatedFilters.born_year_from;
       }
     }
-    
+
     // Only include born_year_to if it's a valid 4-digit year
     if (validatedFilters.born_year_to) {
-      if (validatedFilters.born_year_to < 1000 || validatedFilters.born_year_to > 2100) {
+      if (
+        validatedFilters.born_year_to < 1000 ||
+        validatedFilters.born_year_to > 2100
+      ) {
         delete validatedFilters.born_year_to;
       }
     }
-    
+
     setFilters(validatedFilters);
     setCurrentPage(1);
   };
 
   if (error) {
     return (
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Authors</h1>
-            <p className="text-gray-600 mb-6">{error.message}</p>
-            <button
-              onClick={() => refetch()}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              Try Again
-            </button>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Error Loading Authors
+          </h1>
+          <p className="text-gray-600 mb-6">{error.message}</p>
+          <button
+            onClick={() => refetch()}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            Try Again
+          </button>
         </div>
+      </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -129,20 +138,25 @@ export default function AuthorsPage() {
 
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-700">Sort by:</span>
-              <select
+              <SelectInput
+                name="sortBy"
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-1 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="createdAt">Date Added</option>
-                <option value="name">Name</option>
-                <option value="born_date">Birth Date</option>
-              </select>
+                options={[
+                  { value: "createdAt", label: "Date Added" },
+                  { value: "name", label: "Name" },
+                  { value: "born_date", label: "Birth Date" },
+                ]}
+                placeholder="Sort by"
+                className="min-w-[140px]"
+              />
               <button
-                onClick={() => setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC')}
+                onClick={() =>
+                  setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC")
+                }
                 className="p-1 text-gray-400 hover:text-gray-600"
               >
-                {sortOrder === 'ASC' ? (
+                {sortOrder === "ASC" ? (
                   <SortAsc className="h-4 w-4" />
                 ) : (
                   <SortDesc className="h-4 w-4" />
@@ -156,7 +170,7 @@ export default function AuthorsPage() {
             isOpen={showFilters}
             onClearAll={() => {
               setFilters({});
-              setSearchTerm('');
+              setSearchTerm("");
               setCurrentPage(1);
             }}
           >
@@ -166,7 +180,7 @@ export default function AuthorsPage() {
               type="number"
               min={1800}
               max={new Date().getFullYear() + 1}
-              value={filters.born_year_from?.toString() || '1800'}
+              value={filters.born_year_from?.toString() || "1800"}
               onChange={(value) => {
                 const year = parseInt(value) || undefined;
                 handleFilterChange({ ...filters, born_year_from: year });
@@ -178,7 +192,7 @@ export default function AuthorsPage() {
               type="number"
               min={1000}
               max={new Date().getFullYear() + 1}
-              value={filters.born_year_to?.toString() || '2025'}
+              value={filters.born_year_to?.toString() || "2025"}
               onChange={(value) => {
                 const year = parseInt(value) || undefined;
                 handleFilterChange({ ...filters, born_year_to: year });
@@ -193,7 +207,7 @@ export default function AuthorsPage() {
         ) : (
           <>
             <AuthorList authors={data?.authors?.authors || []} />
-            
+
             {data?.authors?.pagination && (
               <div className="mt-8">
                 <Pagination

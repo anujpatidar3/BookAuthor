@@ -5,7 +5,7 @@ import { useQuery } from "@apollo/client";
 import { BookCard } from "@/components/BookCard";
 import { AuthorCard } from "@/components/AuthorCard";
 import { LoadingSpinner } from "@/components/Loading";
-import { SearchBar } from "@/components/SearchBar";
+import { SearchBar, SelectInput } from "@/components";
 import { SEARCH } from "@/lib/queries";
 import { Book, Author } from "@/types";
 import { Search } from "lucide-react";
@@ -54,17 +54,20 @@ export default function SearchPage() {
               />
             </div>
             <div>
-              <select
+              <SelectInput
+                name="searchType"
                 value={searchType}
                 onChange={(e) =>
                   setSearchType(e.target.value as "all" | "books" | "authors")
                 }
-                className="rounded-md border-gray-300 text-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              >
-                <option value="all">All</option>
-                <option value="books">Books Only</option>
-                <option value="authors">Authors Only</option>
-              </select>
+                options={[
+                  { value: "all", label: "All" },
+                  { value: "books", label: "Books Only" },
+                  { value: "authors", label: "Authors Only" },
+                ]}
+                placeholder="Select type"
+                className="min-w-[140px]"
+              />
             </div>
           </div>
         </form>

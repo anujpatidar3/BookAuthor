@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { ImageUpload } from '@/components/ImageUpload';
-import { TextInput } from '@/components/TextInput';
-import { TextArea } from '@/components/TextArea';
-import { SelectInput } from '@/components/SelectInput';
-import { DateInput } from '@/components/DateInput';
-import { Save, X } from 'lucide-react';
-import { Author } from '@/types';
+import { useState, useEffect } from "react";
+import { ImageUpload } from "@/components/ImageUpload";
+import { TextInput } from "@/components/TextInput";
+import { TextArea } from "@/components/TextArea";
+import { SelectInput } from "@/components/SelectInput";
+import { DateInput } from "@/components/DateInput";
+import { Save, X } from "lucide-react";
+import { Author } from "@/types";
 
 export interface BookFormData {
   title: string;
@@ -18,7 +18,7 @@ export interface BookFormData {
 }
 
 interface BookFormProps {
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   initialData?: BookFormData;
   authors?: Author[];
   authorsLoading?: boolean;
@@ -36,15 +36,15 @@ export function BookForm({
   loading = false,
   errors = {},
   onSubmit,
-  onCancel
+  onCancel,
 }: BookFormProps) {
   const [formData, setFormData] = useState<BookFormData>(
     initialData || {
-      title: '',
-      description: '',
-      publishedDate: '',
-      authorId: '',
-      coverImageUrl: ''
+      title: "",
+      description: "",
+      publishedDate: "",
+      authorId: "",
+      coverImageUrl: "",
     }
   );
 
@@ -60,15 +60,19 @@ export function BookForm({
     onSubmit(formData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const isCreate = mode === 'create';
-  const title = isCreate ? 'Add New Book' : 'Edit Book';
-  const submitText = isCreate ? 'Create Book' : 'Save Changes';
-  const loadingText = isCreate ? 'Creating...' : 'Saving...';
+  const isCreate = mode === "create";
+  const title = isCreate ? "Add New Book" : "Edit Book";
+  const submitText = isCreate ? "Create Book" : "Save Changes";
+  const loadingText = isCreate ? "Creating..." : "Saving...";
 
   return (
     <div className="bg-white shadow rounded-lg">
@@ -122,7 +126,7 @@ export function BookForm({
           onChange={handleChange}
           options={authors.map((author: Author) => ({
             value: author.id.toString(),
-            label: author.name
+            label: author.name,
           }))}
           placeholder="Select an author"
           required
@@ -145,7 +149,9 @@ export function BookForm({
             type="book"
             label="Book Cover"
             value={formData.coverImageUrl}
-            onChange={(url) => setFormData(prev => ({ ...prev, coverImageUrl: url || '' }))}
+            onChange={(url) =>
+              setFormData((prev) => ({ ...prev, coverImageUrl: url || "" }))
+            }
             disabled={loading}
           />
         </div>
@@ -155,10 +161,14 @@ export function BookForm({
           name="publishedDate"
           value={formData.publishedDate}
           onChange={handleChange}
-          max={new Date().toISOString().split('T')[0]}
+          max={new Date().toISOString().split("T")[0]}
         />
 
-        <div className={`flex ${isCreate ? 'justify-end' : 'justify-start'} space-x-3 pt-6 border-t border-gray-200`}>
+        <div
+          className={`flex ${
+            isCreate ? "justify-end" : "justify-start"
+          } space-x-3 pt-6 border-t border-gray-200`}
+        >
           {isCreate && (
             <button
               type="button"
