@@ -1,4 +1,14 @@
 import { gql } from "@apollo/client";
+import {
+  BOOK_CARD_FRAGMENT,
+  BOOK_FULL_FRAGMENT,
+  AUTHOR_CARD_FRAGMENT,
+  AUTHOR_FULL_FRAGMENT,
+  REVIEW_FRAGMENT,
+  PAGINATION_FRAGMENT,
+  SEARCH_BOOK_FRAGMENT,
+  SEARCH_AUTHOR_FRAGMENT,
+} from "./fragments";
 
 // Book Queries
 export const GET_BOOKS = gql`
@@ -17,68 +27,28 @@ export const GET_BOOKS = gql`
       sortOrder: $sortOrder
     ) {
       books {
-        id
-        title
-        description
-        published_date
-        author {
-          id
-          name
-        }
-        metadata {
-          averageRating
-          totalReviews
-          genres
-          coverImageUrl
-        }
-        createdAt
+        ...BookCard
       }
       pagination {
-        currentPage
-        totalPages
-        totalItems
-        hasNextPage
-        hasPrevPage
+        ...Pagination
       }
     }
   }
+  ${BOOK_CARD_FRAGMENT}
+  ${PAGINATION_FRAGMENT}
 `;
 
 export const GET_BOOK = gql`
   query GetBook($id: ID!) {
     book(id: $id) {
-      id
-      title
-      description
-      published_date
-      author {
-        id
-        name
-        biography
-      }
-      metadata {
-        genres
-        tags
-        isbn
-        pageCount
-        language
-        coverImageUrl
-        averageRating
-        totalReviews
-        totalRatings
-      }
+      ...BookFull
       reviews {
-        id
-        rating
-        comment
-        reviewerName
-        helpful
-        createdAt
+        ...Review
       }
-      createdAt
-      updatedAt
     }
   }
+  ${BOOK_FULL_FRAGMENT}
+  ${REVIEW_FRAGMENT}
 `;
 
 // Author Queries
@@ -98,26 +68,15 @@ export const GET_AUTHORS = gql`
       sortOrder: $sortOrder
     ) {
       authors {
-        id
-        name
-        biography
-        born_date
-        metadata {
-          totalBooks
-          averageRating
-          profileImageUrl
-        }
-        createdAt
+        ...AuthorCard
       }
       pagination {
-        currentPage
-        totalPages
-        totalItems
-        hasNextPage
-        hasPrevPage
+        ...Pagination
       }
     }
   }
+  ${AUTHOR_CARD_FRAGMENT}
+  ${PAGINATION_FRAGMENT}
 `;
 
 // Optimized query for authors without books (for performance)
@@ -137,26 +96,15 @@ export const GET_AUTHORS_BASIC = gql`
       sortOrder: $sortOrder
     ) {
       authors {
-        id
-        name
-        biography
-        born_date
-        metadata {
-          totalBooks
-          averageRating
-          profileImageUrl
-        }
-        createdAt
+        ...AuthorCard
       }
       pagination {
-        currentPage
-        totalPages
-        totalItems
-        hasNextPage
-        hasPrevPage
+        ...Pagination
       }
     }
   }
+  ${AUTHOR_CARD_FRAGMENT}
+  ${PAGINATION_FRAGMENT}
 `;
 
 // Query to get only author names (for dropdown)
@@ -187,26 +135,10 @@ export const GET_AUTHOR_NAMES = gql`
 export const GET_AUTHOR_BASIC = gql`
   query GetAuthorBasic($id: ID!) {
     author(id: $id) {
-      id
-      name
-      biography
-      born_date
-      metadata {
-        socialMedia {
-          twitter
-          facebook
-          website
-        }
-        profileImageUrl
-        awards
-        totalBooks
-        averageRating
-        followers
-      }
-      createdAt
-      updatedAt
+      ...AuthorFull
     }
   }
+  ${AUTHOR_FULL_FRAGMENT}
 `;
 
 // Separate query for getting books by author (can be used independently)
@@ -226,88 +158,49 @@ export const GET_BOOKS_BY_AUTHOR = gql`
       sortOrder: $sortOrder
     ) {
       books {
-        id
-        title
-        description
-        published_date
-        metadata {
-          averageRating
-          totalReviews
-          coverImageUrl
-        }
-        createdAt
+        ...BookCard
       }
       pagination {
-        currentPage
-        totalPages
-        totalItems
-        hasNextPage
-        hasPrevPage
+        ...Pagination
       }
     }
   }
+  ${BOOK_CARD_FRAGMENT}
+  ${PAGINATION_FRAGMENT}
 `;
 
 // Search Queries
 export const SEARCH_BOOKS = gql`
   query SearchBooks($query: String!) {
     searchBooks(query: $query) {
-      id
-      title
-      description
-      author {
-        id
-        name
-      }
-      metadata {
-        averageRating
-        coverImageUrl
-      }
+      ...SearchBook
     }
   }
+  ${SEARCH_BOOK_FRAGMENT}
 `;
 
 export const SEARCH_AUTHORS = gql`
   query SearchAuthors($query: String!) {
     searchAuthors(query: $query) {
-      id
-      name
-      biography
-      metadata {
-        totalBooks
-        profileImageUrl
-      }
+      ...SearchAuthor
     }
   }
+  ${SEARCH_AUTHOR_FRAGMENT}
 `;
 
 export const SEARCH = gql`
   query Search($query: String!, $type: String = "all") {
     search(query: $query, type: $type) {
       books {
-        id
-        title
-        description
-        author {
-          id
-          name
-        }
-        metadata {
-          averageRating
-          coverImageUrl
-        }
+        ...SearchBook
       }
       authors {
-        id
-        name
-        biography
-        metadata {
-          totalBooks
-          profileImageUrl
-        }
+        ...SearchAuthor
       }
     }
   }
+  ${SEARCH_BOOK_FRAGMENT}
+  ${SEARCH_AUTHOR_FRAGMENT}
 `;
 
 // Reviews Query
@@ -315,21 +208,13 @@ export const GET_REVIEWS = gql`
   query GetReviews($bookId: Int!, $page: Int, $limit: Int) {
     reviews(bookId: $bookId, page: $page, limit: $limit) {
       reviews {
-        id
-        rating
-        comment
-        reviewerName
-        helpful
-        createdAt
-        updatedAt
+        ...Review
       }
       pagination {
-        currentPage
-        totalPages
-        totalItems
-        hasNextPage
-        hasPrevPage
+        ...Pagination
       }
     }
   }
+  ${REVIEW_FRAGMENT}
+  ${PAGINATION_FRAGMENT}
 `;
