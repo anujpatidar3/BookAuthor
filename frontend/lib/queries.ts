@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Book Queries
 export const GET_BOOKS = gql`
@@ -276,6 +276,35 @@ export const SEARCH_AUTHORS = gql`
       metadata {
         totalBooks
         profileImageUrl
+      }
+    }
+  }
+`;
+
+export const SEARCH = gql`
+  query Search($query: String!, $type: String = "all") {
+    search(query: $query, type: $type) {
+      books {
+        id
+        title
+        description
+        author {
+          id
+          name
+        }
+        metadata {
+          averageRating
+          coverImageUrl
+        }
+      }
+      authors {
+        id
+        name
+        biography
+        metadata {
+          totalBooks
+          profileImageUrl
+        }
       }
     }
   }

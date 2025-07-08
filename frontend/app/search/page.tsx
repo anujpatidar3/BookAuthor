@@ -6,7 +6,7 @@ import { BookCard } from "@/components/BookCard";
 import { AuthorCard } from "@/components/AuthorCard";
 import { LoadingSpinner } from "@/components/Loading";
 import { SearchBar } from "@/components/SearchBar";
-import { SEARCH_BOOKS, SEARCH_AUTHORS } from "@/lib/queries";
+import { SEARCH } from "@/lib/queries";
 import { Book, Author } from "@/types";
 import { Search } from "lucide-react";
 import { NoSearchResultsBanner } from "@/components/NoSearchResultsBanner";
@@ -17,26 +17,17 @@ export default function SearchPage() {
     "all"
   );
 
-  const { data: booksData, loading: booksLoading } = useQuery(SEARCH_BOOKS, {
-    variables: { query: searchTerm },
-    skip: searchType === "authors" || !searchTerm,
+  const { data, loading } = useQuery(SEARCH, {
+    variables: { query: searchTerm, type: searchType },
+    skip: !searchTerm,
   });
 
-  const { data: authorsData, loading: authorsLoading } = useQuery(
-    SEARCH_AUTHORS,
-    {
-      variables: { query: searchTerm },
-      skip: searchType === "books" || !searchTerm,
-    }
-  );
-
-  const books = booksData?.searchBooks || [];
-  const authors = authorsData?.searchAuthors || [];
-  const isLoading = booksLoading || authorsLoading;
+  const books = data?.search?.books || [];
+  const authors = data?.search?.authors || [];
+  const isLoading = loading;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Search is triggered automatically by the queries when searchTerm changes
   };
 
   return (
@@ -59,7 +50,7 @@ export default function SearchPage() {
                 placeholder="Search for books or authors..."
                 value={searchTerm}
                 onChange={setSearchTerm}
-                onSearch={() => {}} // Not used in controlled mode
+                onSearch={() => {}}
               />
             </div>
             <div>
