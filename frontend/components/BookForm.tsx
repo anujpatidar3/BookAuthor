@@ -4,39 +4,47 @@ import { useState, useEffect } from 'react';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TextInput } from '@/components/TextInput';
 import { TextArea } from '@/components/TextArea';
+import { SelectInput } from '@/components/SelectInput';
 import { DateInput } from '@/components/DateInput';
 import { Save, X } from 'lucide-react';
+import { Author } from '@/types';
 
-export interface AuthorFormData {
-  name: string;
-  biography: string;
-  bornDate: string;
-  profileImageUrl: string;
+export interface BookFormData {
+  title: string;
+  description: string;
+  publishedDate: string;
+  authorId: string;
+  coverImageUrl: string;
 }
 
-interface AuthorFormProps {
+interface BookFormProps {
   mode: 'create' | 'edit';
-  initialData?: AuthorFormData;
+  initialData?: BookFormData;
+  authors?: Author[];
+  authorsLoading?: boolean;
   loading?: boolean;
   errors?: Record<string, string>;
-  onSubmit: (data: AuthorFormData) => void;
+  onSubmit: (data: BookFormData) => void;
   onCancel: () => void;
 }
 
-export function AuthorForm({
+export function BookForm({
   mode,
   initialData,
+  authors = [],
+  authorsLoading = false,
   loading = false,
   errors = {},
   onSubmit,
   onCancel
-}: AuthorFormProps) {
-  const [formData, setFormData] = useState<AuthorFormData>(
+}: BookFormProps) {
+  const [formData, setFormData] = useState<BookFormData>(
     initialData || {
-      name: '',
-      biography: '',
-      bornDate: '',
-      profileImageUrl: ''
+      title: '',
+      description: '',
+      publishedDate: '',
+      authorId: '',
+      coverImageUrl: ''
     }
   );
 
@@ -52,14 +60,14 @@ export function AuthorForm({
     onSubmit(formData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const isCreate = mode === 'create';
-  const title = isCreate ? 'Add New Author' : 'Edit Author';
-  const submitText = isCreate ? 'Create Author' : 'Save Changes';
+  const title = isCreate ? 'Add New Book' : 'Edit Book';
+  const submitText = isCreate ? 'Create Book' : 'Save Changes';
   const loadingText = isCreate ? 'Creating...' : 'Saving...';
 
   return (
@@ -70,7 +78,7 @@ export function AuthorForm({
             <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
             {isCreate && (
               <p className="mt-1 text-sm text-gray-600">
-                Fill in the details below to add a new author to the collection.
+                Fill in the details below to add a new book to the collection.
               </p>
             )}
           </div>
@@ -98,39 +106,56 @@ export function AuthorForm({
         )}
 
         <TextInput
-          label="Name"
-          name="name"
-          value={formData.name}
+          label="Title"
+          name="title"
+          value={formData.title}
           onChange={handleChange}
-          placeholder="Enter author name"
+          placeholder="Enter book title"
           required
-          error={errors.name}
+          error={errors.title}
+        />
+
+        <SelectInput
+          label="Author"
+          name="authorId"
+          value={formData.authorId}
+          onChange={handleChange}
+          options={authors.map((author: Author) => ({
+            value: author.id.toString(),
+            label: author.name
+          }))}
+          placeholder="Select an author"
+          required
+          error={errors.authorId}
+          loading={authorsLoading}
+          loadingText="Loading authors..."
         />
 
         <TextArea
-          label="Biography"
-          name="biography"
-          value={formData.biography}
+          label="Description"
+          name="description"
+          value={formData.description}
           onChange={handleChange}
-          placeholder="Enter author biography"
-          rows={6}
+          placeholder="Enter book description"
+          rows={4}
         />
 
         <div>
           <ImageUpload
-            type="author"
-            label="Profile Image"
-            value={formData.profileImageUrl}
-            onChange={(url) => setFormData(prev => ({ ...prev, profileImageUrl: url || '' }))}
+            type="book"
+            label="Book Cover"
+            value={formData.coverImageUrl}
+            onChange={(url) => setFormData(prev => ({ ...prev, coverImageUrl: url || '' }))}
             disabled={loading}
           />
         </div>
 
         <DateInput
-          label="Born Date"
-          name="bornDate"
-          value={formData.bornDate}
+          label="Published Date"
+          name="publishedDate"
+          value={formData.publishedDate}
           onChange={handleChange}
+          max={new Date().toISOString().split('T')[0]}
         />
 
         <div className={`flex ${isCreate ? 'justify-end' : 'justify-start'} space-x-3 pt-6 border-t border-gray-200`}>

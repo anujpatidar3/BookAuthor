@@ -6,6 +6,7 @@ export { DateInput } from './DateInput';
 
 // Form Components
 export { AuthorForm } from './AuthorForm';
+export { BookForm } from './BookForm';
 
 // Filter Components  
 export { DateFilter } from './DateFilter';

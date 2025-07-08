@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ import { DELETE_AUTHOR, UPDATE_AUTHOR } from '@/lib/mutations';
 import { Author, Book } from '@/types';
 import { User, Calendar, BookOpen, Edit, Trash2 } from 'lucide-react';
 
-export default function AuthorDetail() {
+function AuthorDetailContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -206,7 +206,6 @@ export default function AuthorDetail() {
             <AuthorForm
               mode="edit"
               initialData={formData}
-              author={author}
               loading={updating}
               errors={errors}
               onSubmit={handleSubmit}
@@ -411,5 +410,19 @@ export default function AuthorDetail() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function AuthorDetail() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex justify-center">
+          <LoadingSpinner size="lg" />
+        </div>
+      </div>
+    }>
+      <AuthorDetailContent />
+    </Suspense>
   );
 }

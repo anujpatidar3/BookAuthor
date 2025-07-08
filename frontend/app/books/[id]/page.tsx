@@ -1,25 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { LoadingSpinner } from '@/components/Loading';
 import ReviewForm from '@/components/ReviewForm';
 import ReviewList from '@/components/ReviewList';
-import { ImageUpload } from '@/components/ImageUpload';
-import { TextInput } from '@/components/TextInput';
-import { TextArea } from '@/components/TextArea';
-import { SelectInput } from '@/components/SelectInput';
-import { DateInput } from '@/components/DateInput';
+import { BookForm, BookFormData } from '@/components/BookForm';
 import { GET_BOOK, GET_AUTHOR_NAMES } from '@/lib/queries';
 import { UPDATE_BOOK } from '@/lib/mutations';
-import { Book, Author } from '@/types';
+import { Book } from '@/types';
 import { formatDate, renderStars } from '@/lib/utils';
-import { ArrowLeft, Calendar, User, Star, MessageSquare, Edit, Save, X } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Star, MessageSquare, Edit } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function BookDetailPage() {
+function BookDetailContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,7 +38,7 @@ export default function BookDetailPage() {
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
 
   // Form state for edit mode
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<BookFormData>({
     title: '',
     description: '',
     publishedDate: '',
@@ -111,9 +107,7 @@ export default function BookDetailPage() {
     setEditingReview(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (formData: BookFormData) => {
     // Basic validation
     const newErrors: Record<string, string> = {};
     if (!formData.title.trim()) newErrors.title = 'Title is required';
@@ -123,6 +117,9 @@ export default function BookDetailPage() {
       setErrors(newErrors);
       return;
     }
+
+    // Clear errors if validation passes
+    setErrors({});
 
     try {
       await updateBook({
@@ -139,32 +136,13 @@ export default function BookDetailPage() {
       });
     } catch (error) {
       console.error('Error submitting form:', error);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors({ general: 'Failed to update book. Please try again.' });
     }
   };
 
   const handleEditToggle = () => {
     if (isEditMode) {
-      // Cancel edit - reset form data
-      if (data?.book) {
-        const book = data.book;
-        setFormData({
-          title: book.title || '',
-          description: book.description || '',
-          publishedDate: book.published_date 
-            ? new Date(book.published_date).toISOString().split('T')[0] 
-            : '',
-          authorId: book.author?.id?.toString() || '',
-          coverImageUrl: book.metadata?.coverImageUrl || ''
-        });
-      }
+      // Cancel edit
       setErrors({});
       // Update URL to remove edit parameter
       const url = new URL(window.location.href);
@@ -229,92 +207,17 @@ export default function BookDetailPage() {
 
         <div className="bg-white shadow rounded-lg overflow-hidden">
           {isEditMode ? (
-            // Edit Form
-            <form onSubmit={handleSubmit} className="px-6 py-8">
-              <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Edit Book</h1>
-                <div className="flex space-x-3">
-                  <button
-                    type="button"
-                    onClick={handleEditToggle}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                    disabled={updating}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={updating}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {updating ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </div>
-
-              {errors.general && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-                  <p className="text-sm text-red-600">{errors.general}</p>
-                </div>
-              )}
-
-              <div className="space-y-6">
-                <TextInput
-                  label="Title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Enter book title"
-                  required
-                  error={errors.title}
-                />
-
-                <SelectInput
-                  label="Author"
-                  name="authorId"
-                  value={formData.authorId}
-                  onChange={handleChange}
-                  options={authorsData?.authors?.authors?.map((author: Author) => ({
-                    value: author.id.toString(),
-                    label: author.name
-                  })) || []}
-                  placeholder="Select an author"
-                  required
-                  error={errors.authorId}
-                  loading={authorsLoading}
-                  loadingText="Loading authors..."
-                />
-
-                <TextArea
-                  label="Description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Enter book description"
-                  rows={4}
-                />
-
-                <div>
-                  <ImageUpload
-                    type="book"
-                    label="Book Cover"
-                    value={formData.coverImageUrl}
-                    onChange={(url) => setFormData(prev => ({ ...prev, coverImageUrl: url || '' }))}
-                    disabled={updating}
-                  />
-                </div>
-
-                <DateInput
-                  label="Published Date"
-                  name="publishedDate"
-                  value={formData.publishedDate}
-                  onChange={handleChange}
-                  max={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-            </form>
+            // Edit Form using BookForm component
+            <BookForm
+              mode="edit"
+              initialData={formData}
+              authors={authorsData?.authors?.authors || []}
+              authorsLoading={authorsLoading}
+              loading={updating}
+              errors={errors}
+              onSubmit={handleSubmit}
+              onCancel={handleEditToggle}
+            />
           ) : (
             // View Mode
             <div className="px-6 py-8">
@@ -471,5 +374,19 @@ export default function BookDetailPage() {
           />
         )}
       </main>
+  );
+}
+
+export default function BookDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex justify-center">
+          <LoadingSpinner size="lg" />
+        </div>
+      </div>
+    }>
+      <BookDetailContent />
+    </Suspense>
   );
 }
