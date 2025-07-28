@@ -2,6 +2,7 @@ import { gql } from "@apollo/client";
 import {
   BOOK_CARD_FRAGMENT,
   AUTHOR_CARD_FRAGMENT,
+  AUTHOR_FULL_FRAGMENT,
   REVIEW_FRAGMENT,
 } from "./fragments";
 
@@ -38,11 +39,15 @@ export const CREATE_AUTHOR = gql`
 export const UPDATE_AUTHOR = gql`
   mutation UpdateAuthor($id: ID!, $input: AuthorUpdateInput!) {
     updateAuthor(id: $id, input: $input) {
-      ...AuthorCard
+      ...AuthorFull
       updatedAt
+      books {
+        ...BookCard
+      }
     }
   }
-  ${AUTHOR_CARD_FRAGMENT}
+  ${AUTHOR_FULL_FRAGMENT}
+  ${BOOK_CARD_FRAGMENT}
 `;
 
 export const DELETE_AUTHOR = gql`

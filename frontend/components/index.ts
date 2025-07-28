@@ -18,6 +18,9 @@ export { FilterPanel } from "./FilterPanel";
 export { SearchBar } from "./SearchBar";
 export { NoSearchResultsBanner } from "./NoSearchResultsBanner";
 
+// Modal Components
+export { Modal, ConfirmModal } from "./Modal";
+
 // Other Components
 export { ImageUpload } from "./ImageUpload";
 export { Navigation } from "./Navigation";

@@ -5,6 +5,7 @@ import { Star, MessageSquare, Edit, Trash2, ThumbsUp } from "lucide-react";
 import { GET_REVIEWS } from "../lib/queries";
 import { DELETE_REVIEW, MARK_REVIEW_HELPFUL } from "../lib/mutations";
 import { formatDate } from "../lib/utils";
+import { ConfirmModal } from "./Modal";
 
 interface Review {
   id: string;
@@ -31,6 +32,8 @@ export default function ReviewList({
 }: ReviewListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
 
   const { data, loading, error, refetch } = useQuery(GET_REVIEWS, {
     variables: {
@@ -51,14 +54,17 @@ export default function ReviewList({
   }, [refreshTrigger, refetch]);
 
   const handleDeleteReview = async (reviewId: string) => {
-    if (!confirm("Are you sure you want to delete this review?")) {
-      return;
-    }
+    setReviewToDelete(reviewId);
+    setShowDeleteConfirm(true);
+  };
 
-    setDeletingReviewId(reviewId);
+  const confirmDeleteReview = async () => {
+    if (!reviewToDelete) return;
+
+    setDeletingReviewId(reviewToDelete);
     try {
       await deleteReview({
-        variables: { id: reviewId },
+        variables: { id: reviewToDelete },
       });
       refetch();
       bookDataRefetch();
@@ -67,6 +73,8 @@ export default function ReviewList({
       alert("Failed to delete review. Please try again.");
     } finally {
       setDeletingReviewId(null);
+      setShowDeleteConfirm(false);
+      setReviewToDelete(null);
     }
   };
 
@@ -203,6 +211,22 @@ export default function ReviewList({
           </button>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setReviewToDelete(null);
+        }}
+        onConfirm={confirmDeleteReview}
+        title="Delete Review"
+        message="Are you sure you want to delete this review? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        icon={<Trash2 className="h-6 w-6 text-red-600" />}
+        loading={deletingReviewId !== null}
+      />
     </div>
   );
 }

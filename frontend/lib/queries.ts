@@ -131,14 +131,17 @@ export const GET_AUTHOR_NAMES = gql`
   }
 `;
 
-// Query for author without books (for performance when books aren't needed)
 export const GET_AUTHOR_BASIC = gql`
   query GetAuthorBasic($id: ID!) {
     author(id: $id) {
       ...AuthorFull
+      books {
+        ...BookCard
+      }
     }
   }
   ${AUTHOR_FULL_FRAGMENT}
+  ${BOOK_CARD_FRAGMENT}
 `;
 
 // Separate query for getting books by author (can be used independently)
