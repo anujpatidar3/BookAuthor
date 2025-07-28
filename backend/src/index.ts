@@ -1,22 +1,22 @@
-import express from 'express';
-import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
-import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import { createServer } from 'http';
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import bodyParser from 'body-parser';
-import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
-import { config } from './config';
-import sequelize from './config/database';
-import connectMongoDB from './config/mongodb';
-import { typeDefs } from './schemas/typeDefs';
-import { resolvers } from './resolvers';
+import express from "express";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { createServer } from "http";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import bodyParser from "body-parser";
+import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
+import { config } from "./config";
+import sequelize from "./config/database";
+import connectMongoDB from "./config/mongodb";
+import { typeDefs } from "./schemas/typeDefs";
+import { resolvers } from "./resolvers";
 
 // Import models to ensure they are registered
-import './models/Author';
-import './models/Book';
+import "./models/Author";
+import "./models/Book";
 
 async function startServer() {
   try {
@@ -25,30 +25,33 @@ async function startServer() {
     const httpServer = createServer(app);
 
     // Trust proxy for production deployment (Render, Railway, etc.)
-    if (config.nodeEnv === 'production') {
-      app.set('trust proxy', true);
-      console.log('Trust proxy enabled for production');
+    if (config.nodeEnv === "production") {
+      app.set("trust proxy", true);
+      console.log("Trust proxy enabled for production");
     }
 
     // Security middleware
-    app.use(helmet({
-      contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
-      crossOriginEmbedderPolicy: false,
-    }));
+    app.use(
+      helmet({
+        contentSecurityPolicy:
+          process.env.NODE_ENV === "production" ? undefined : false,
+        crossOriginEmbedderPolicy: false,
+      })
+    );
 
     // Rate limiting
     const limiter = rateLimit({
       windowMs: config.rateLimit.windowMs,
       max: config.rateLimit.max,
-      message: 'Too many requests from this IP, please try again later.',
+      message: "Too many requests from this IP, please try again later.",
       standardHeaders: true,
       legacyHeaders: false,
       skip: (req) => {
         // Skip rate limiting for health checks
-        return req.path === '/health' || req.path === '/';
-      }
+        return req.path === "/health" || req.path === "/";
+      },
     });
-    app.use('/graphql', limiter);
+    app.use("/graphql", limiter);
 
     // Create Apollo Server
     const server = new ApolloServer({
@@ -56,10 +59,10 @@ async function startServer() {
       resolvers,
       plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
       csrfPrevention: {
-        requestHeaders: ['x-apollo-operation-name', 'apollo-require-preflight']
+        requestHeaders: ["x-apollo-operation-name", "apollo-require-preflight"],
       },
       formatError: (error) => {
-        console.error('GraphQL Error:', error);
+        console.error("GraphQL Error:", error);
         return {
           message: error.message,
           code: error.extensions?.code,
@@ -72,71 +75,70 @@ async function startServer() {
     await server.start();
 
     // Apply global body parser middleware
-    app.use(express.json({ limit: '50mb' }));
+    app.use(express.json({ limit: "50mb" }));
     app.use(express.urlencoded({ extended: true }));
 
     // Apply GraphQL endpoint with CORS and upload middleware
-    app.use('/graphql', 
+    app.use(
+      "/graphql",
       cors(config.cors),
       graphqlUploadExpress({ maxFileSize: 5000000, maxFiles: 1 }),
       expressMiddleware(server) as any
     );
 
-    app.get('/', (req, res) => {
-      res.json({ 
-        message: 'BookAuthor API Server', 
-        graphql: '/graphql',
-        health: '/health',
+    app.get("/", (req, res) => {
+      res.json({
+        message: "BookAuthor API Server",
+        graphql: "/graphql",
+        health: "/health",
         environment: config.nodeEnv,
-        trustProxy: app.get('trust proxy')
+        trustProxy: app.get("trust proxy"),
       });
     });
 
     // Health check endpoint
-    app.get('/health', (req, res) => {
-      res.status(200).json({ 
-        status: 'OK', 
+    app.get("/health", (req, res) => {
+      res.status(200).json({
+        status: "OK",
         timestamp: new Date().toISOString(),
-        environment: config.nodeEnv 
+        environment: config.nodeEnv,
       });
     });
 
     // Connect to databases
-    console.log('Connecting to PostgreSQL...');
+    console.log("Connecting to PostgreSQL...");
     await sequelize.authenticate();
-    console.log('PostgreSQL connected successfully');
+    console.log("PostgreSQL connected successfully");
 
-    // Sync database models
-    if (config.nodeEnv === 'development') {
-      await sequelize.sync({ alter: true });
-      console.log('Database models synchronized');
-    }
+    // Database connection established
+    console.log("Database connection established");
 
-    console.log('Connecting to MongoDB...');
+    console.log("Connecting to MongoDB...");
     await connectMongoDB();
 
     // Start HTTP server
     const PORT = config.port;
     httpServer.listen(PORT, () => {
       console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
-      console.log(`📊 Health check available at http://localhost:${PORT}/health`);
+      console.log(
+        `📊 Health check available at http://localhost:${PORT}/health`
+      );
     });
-
   } catch (error: any) {
-    console.error('Failed to start: ', error);
+    console.error("Failed to start: ", error);
     process.exit(1);
   }
 }
 
 // Handle graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received, shutting down gracefully...");
   await sequelize.close();
   process.exit(0);
 });
 
-process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully...');
+process.on("SIGINT", async () => {
+  console.log("SIGINT received, shutting down gracefully...");
   await sequelize.close();
   process.exit(0);
 });
